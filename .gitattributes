@@ -1,0 +1,11 @@
+# Keep binary assets byte-exact. Without these rules Git may treat a PDF as text
+# and silently convert line endings on checkout, which corrupts the file.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
