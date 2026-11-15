@@ -128,7 +128,14 @@ The dev server prints a local URL (normally <http://localhost:5173>).
 - URL: <https://github.com/Harshrajput88/ethereal-co-business-manager>
 - Visibility: **private**
 - Default branch: `main`
-- Initial commit: `9df830e` — *chore: initial commit of existing Ethereal Co. business manager app*
+- Commit history:
+  - `9df830e` — *chore: initial commit of existing Ethereal Co. business manager app*
+  - `1bacca8` — *docs: replace template README with accurate setup and status documentation*
+  - `6bd7ab0` — *docs: add project audit report PDF*
+  - `27c3bba` — *chore: mark PDF and image assets as binary to prevent line-ending corruption*
+
+`.gitattributes` marks PDF and image files as binary so Git never rewrites their
+line endings on checkout (which would corrupt the PDF).
 
 ## Audit report
 
@@ -143,3 +150,6 @@ A full technical audit is generated at `reports/ETHEREAL_PROJECT_AUDIT.pdf`.
 - The Supabase project referenced by `.env.local` is unreachable; authentication and
   database behaviour therefore cannot be confirmed until the project is restored or
   a new project is configured.
+- An unrelated, empty public repository (`Harshrajput88/Etheral-Business-Manager`)
+  still exists on the GitHub account. It contains no code or secrets; clean-up
+  (make private or delete) needs owner approval.
