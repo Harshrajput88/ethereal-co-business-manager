@@ -23,6 +23,15 @@ dist-ssr
 secrets/
 .vercel
 
+# Supabase local state (machine-specific; never commit)
+supabase/.temp/
+supabase/.branches/
+
+# Database dumps and archives (may contain data or credentials)
+*.dump
+*.sql.gz
+baseline/*.data.sql
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
