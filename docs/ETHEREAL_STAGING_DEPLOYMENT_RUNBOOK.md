@@ -1,6 +1,6 @@
 # Ethereal Co. — Staging Deployment Runbook
 
-**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. Local remediation and regression coverage have since been added for the previously identified authorization, return-limit, payment-allocation, idempotency, and owner-bootstrap issues; the local suite passes. That is not a substitute for independent security review or a real Supabase-compatible rehearsal with actual concurrent database sessions. Keep the eight-file release set and both historical drafts unchanged until those external gates are complete.
+**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. Local remediation and regression coverage have since been added for the previously identified authorization, return-limit, payment-allocation, idempotency, and owner-bootstrap issues; the local suite passes. That is not a substitute for independent security review or a real Supabase-compatible rehearsal with actual concurrent database sessions. Keep the eight-file business release set, the separate ninth platform-hardening migration, and both historical drafts unchanged until those external gates are complete.
 
 ## Target and scope
 
@@ -31,7 +31,7 @@ WHERE p.id = u.id
 
 ## Explicit migration order
 
-The intended current business package is these eight files, in timestamp order:
+The intended current business package is these eight files, in timestamp order. A separate platform-hardening migration follows them:
 
 1. `supabase/migrations/20261118000100_business_schema.sql`
 2. `supabase/migrations/20261118000200_business_core_rpcs.sql`
@@ -41,6 +41,7 @@ The intended current business package is these eight files, in timestamp order:
 6. `supabase/migrations/20261118000600_business_dashboard_team_rpcs.sql`
 7. `supabase/migrations/20261118000700_business_security_integrity_remediation.sql`
 8. `supabase/migrations/20261118000800_controlled_owner_bootstrap.sql`
+9. `supabase/migrations/20261118000900_revoke_public_rls_auto_enable.sql` (Supabase platform event-trigger privilege hardening)
 
 Do **not** run a generic `supabase db push` against the current migration directory. It also contains these historical drafts, which must not be included implicitly:
 
@@ -55,7 +56,7 @@ Do not proceed until all are true:
 
 - The findings in `reports/ETHEREAL_SIX_MIGRATION_SECURITY_RELEASE_REVIEW.pdf` are addressed and independently reviewed. In particular, fix list-RPC NULL authorization, cumulative/concurrent return limits, payment allocation serialization and amount rounding, and bootstrap/last-owner races.
 - Re-run local SQL parsing, contract checks, and automated tests against the corrected package. Add regression tests for each fix and concurrent operations.
-- Obtain owner/security approval for the exact eight-file package and migration-history strategy.
+- Obtain owner/security approval for the exact nine-file package (eight business migrations plus the platform-hardening migration) and migration-history strategy.
 - Verify staging target ref and project identity; production ref must not match.
 - Obtain a fresh read-only object/history/Auth/Storage inventory. Reconcile all existing objects and identify whether any data must be preserved.
 - Define an owner-approved backup/restore point and confirm restoration access before writes.
@@ -86,7 +87,7 @@ Do not proceed until all are true:
 
 1. Reconfirm the exact staging ref immediately before the write and exclude production.
 2. Use the separately approved, explicit migration selection—not a generic push while the older drafts are present.
-3. Apply migrations 1–8 above sequentially. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
+3. Apply migrations 1–9 above sequentially, including the separate platform event-trigger privilege hardening migration. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
 4. Capture migration output and resulting migration-history IDs. Verify each file is recorded exactly once.
 5. Request/reload the PostgREST schema cache using the approved Supabase mechanism only after all DDL completes.
 6. Provision `profile-picture` and narrowly scoped Storage policies in a separate reviewed step, only if explicitly approved.
@@ -95,7 +96,7 @@ Do not proceed until all are true:
 
 - Confirm Auth is enabled and the signup flow generates an `auth.users` row. Migration 1 creates `api_handle_new_auth_user()` and installs `on_auth_user_created` only if a trigger with that name is absent.
 - Verify there is exactly one intended signup trigger and that it creates a pending salesperson profile without trusting role/status from user metadata.
-- Migration 008 intentionally disables self-service owner claiming; `api_claim_owner()` must remain unavailable to `PUBLIC`, `anon`, and `authenticated`.
+- Migration 008 intentionally disables self-service owner claiming; migration 009 revokes browser-role execution of the Supabase `rls_auto_enable()` event-trigger function while leaving the platform event trigger itself attached; `api_claim_owner()` must remain unavailable to `PUBLIC`, `anon`, and `authenticated`.
 - Create/invite the designated owner through the trusted Auth operator workflow, verify the email and Auth user ID out-of-band, and provision that profile using the operator-only SQL above. Never use a browser RPC or browser-supplied metadata to promote an account.
 - Test pending, approved, disabled, salesperson, admin, and owner authorization. Disabled/pending accounts must not receive list data or invoke privileged operations.
 
@@ -110,7 +111,7 @@ Do not proceed until all are true:
 
 Verify from staging metadata and an authenticated test client:
 
-- Migration ledger contains exactly the reviewed eight current IDs; neither 20261117 draft is applied.
+- Migration ledger contains exactly the reviewed nine current IDs; neither 20261117 draft is applied.
 - All expected tables, constraints, indexes, sequences, and seed products exist.
 - Every browser-visible business table has RLS enabled and expected policies; no unintended direct write grants exist.
 - All SECURITY DEFINER functions have a fixed safe `search_path`, intended ownership, and least-privilege EXECUTE grants. `PUBLIC` and `anon` must not execute business RPCs; internal helpers must not be client-callable.
@@ -148,4 +149,4 @@ Use disposable Auth accounts and clearly marked test data. Verify:
 
 ## Approval boundary
 
-This is a local review/runbook only. No remote connection, SQL execution, Supabase modification, migration, Storage write, or deployment is authorized. Stop and await separate explicit owner approval before any database write.
+This runbook records the staging-only security remediation. No production connection, SQL execution, migration, Storage write, or deployment is authorized by this document. Obtain explicit approval for the exact reviewed migration hashes, backup/restore point, and staging target before any database write.
