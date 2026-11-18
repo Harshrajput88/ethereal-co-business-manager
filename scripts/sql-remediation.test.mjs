@@ -528,7 +528,9 @@ test('dashboard separates cash collected from applied allocations', async () => 
   assert.ok(Number(dashboard.applied_month) <= Number(dashboard.month_collected))
 })
 
-test('a disabled account cannot bootstrap ownership but a pending account can', async () => {
+// Historical migration-007 behavior only. The final migration-008 security boundary is
+// independently verified in sql-owner-bootstrap.test.mjs against the complete schema.
+test('migration 007 legacy bootstrap allows only a pending account before migration 008 disables it', async () => {
   const isolated = await prepareDatabase()
   const asIsolatedUser = async (userId, sql) => {
     await isolated.exec('SET ROLE authenticated')
