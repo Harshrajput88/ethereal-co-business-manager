@@ -48,7 +48,7 @@ where version like '20261117%';
 select version from supabase_migrations.schema_migrations
 where version in ('20261118000100','20261118000200','20261118000300',
                   '20261118000400','20261118000500','20261118000600',
-                  '20261118000700');
+                  '20261118000700','20261118000800');
 
 -- c. Pre-existing duplicate return lines (would abort the unique index)
 select return_request_id, sale_line_id, count(*)
@@ -76,7 +76,7 @@ where pronamespace = 'public'::regnamespace
                   'api_set_employee_role');
 ```
 
-Expected: (a) empty, (b) empty or all seven present, (c) empty, (d) empty or one
+Expected: (a) empty, (b) empty or all eight present, (c) empty, (d) empty or one
 matching trigger, (e) empty or the expected seeded pair, (f) all 13 functions
 present if 1–6 are already applied.
 
@@ -90,7 +90,7 @@ present if 1–6 are already applied.
 4. Functional checks:
    - `api_team_list()` / `api_audit_log()` return `[]` for a pending and a
      disabled profile, and data for owner/admin.
-   - `api_claim_owner()` second call raises “An owner account already exists”.
+   - `authenticated execution of `api_claim_owner()` is denied; the designated owner is provisioned only by a trusted project operator.
    - Two overlapping verification sessions for two payments against one sale:
      exactly one succeeds, the other raises `Sale balance changed`; sale balance
      never negative.
@@ -116,7 +116,7 @@ from pg_trigger where tgrelid = 'auth.users'::regclass and not tgisinternal;
 1. Freeze writes (maintenance window) for the duration; these migrations change
    authorization and allocation behaviour.
 2. Take a logical backup and record the current ledger.
-3. Apply the seven files in order in a single reviewed transaction **or** via
+3. Apply the eight files in order in a single reviewed transaction **or** via
    the CLI with the release directory; confirm each version is recorded exactly
    once.
 4. Re-run §3.5 and a representative read-only smoke set.
