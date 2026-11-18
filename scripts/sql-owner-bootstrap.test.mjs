@@ -34,7 +34,7 @@ before(async () => {
     AS $$ SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     CREATE ROLE anon NOLOGIN;
     CREATE ROLE authenticated NOLOGIN;
-    CREATE FUNCTION public.rls_auto_enable() RETURNS void LANGUAGE sql AS $ SELECT 1 $;
+    CREATE FUNCTION public.rls_auto_enable() RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;
   `)
   for (const file of migrationFiles) {
     await db.exec(readFileSync(join(root, 'supabase', 'migrations', file), 'utf8'))
