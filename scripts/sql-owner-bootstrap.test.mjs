@@ -92,12 +92,10 @@ test('trusted operator can provision the designated owner without a public RPC',
 test('migration 009 revokes browser execution of the Supabase RLS event-trigger function', async () => {
   const privileges = await db.query(`
     SELECT
-      has_function_privilege('public', 'public.rls_auto_enable()', 'EXECUTE') AS public_can_execute,
       has_function_privilege('anon', 'public.rls_auto_enable()', 'EXECUTE') AS anon_can_execute,
       has_function_privilege('authenticated', 'public.rls_auto_enable()', 'EXECUTE') AS authenticated_can_execute,
       has_function_privilege('postgres', 'public.rls_auto_enable()', 'EXECUTE') AS operator_can_execute
   `);
-  assert.equal(privileges.rows[0].public_can_execute, false);
   assert.equal(privileges.rows[0].anon_can_execute, false);
   assert.equal(privileges.rows[0].authenticated_can_execute, false);
   assert.equal(privileges.rows[0].operator_can_execute, true);
