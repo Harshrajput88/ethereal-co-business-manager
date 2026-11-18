@@ -6,7 +6,7 @@ this plan has been executed against staging or production.
 
 ## 1. Release set
 
-Exactly seven migrations, applied in filename order:
+Exactly eight migrations, applied in filename order:
 
 | Order | File | SHA-256 |
 |-------|------|---------|
@@ -17,12 +17,13 @@ Exactly seven migrations, applied in filename order:
 | 5 | `20261118000500_business_inventory_return_expense_rpcs.sql` | `F438A12D4E732053B0ADAF19B2BB9E64AF8DB5E974020673456BC0954CD86626` |
 | 6 | `20261118000600_business_dashboard_team_rpcs.sql` | `05022AF79B4CD7B3D517DA848C2B29294B5FDC50AAAE9FCEBDF5E7A1DC7E6051` |
 | 7 | `20261118000700_business_security_integrity_remediation.sql` | `16D30D467602C9CB909511424DC0330065F920EE6B9DA4D269BEB13F12A3ABC6` |
+| 8 | `20261118000800_controlled_owner_bootstrap.sql` | `03A0F3B4C73331532BF027260E3DDCA570FCDF327D0382777AA3E3162BE45E98` |
 
 **Excluded:** `20261117000100_phase1_foundation.sql` and
 `20261117000200_phase1_commerce_ledgers.sql` are historical drafts. Keep them
 byte-for-byte; do not apply, rename, delete, or mark them applied. Because they
 sit in the CLI migration directory, **never run a generic `supabase db push`**.
-Use a reviewed release directory containing only the seven files above.
+Use a reviewed release directory containing only the eight files above.
 
 > The remediation file was updated after the summary snapshot; the hash above is
 > the authoritative hash of the current file. Re-hash immediately before packing
