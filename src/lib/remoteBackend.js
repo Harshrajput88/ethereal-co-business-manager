@@ -103,6 +103,12 @@ async function updateMyName(fullName) {
 }
 
 async function updateMyAvatar(fileOrDataUrl) {
+  // The profile-picture bucket and private object policies are not part of the
+  // approved database release yet. Fail closed rather than uploading to an
+  // absent bucket or storing an unbounded data URL in the profile row.
+  throw new Error('Profile-picture uploads are temporarily disabled. They will be enabled after the private Supabase Storage bucket and owner-scoped policies are provisioned and tested.')
+
+  /* Storage implementation retained for the separately reviewed enablement:
   const client = requireClient()
   const session = await getSession()
   if (!session?.user) throw new Error('Please sign in again')
@@ -117,6 +123,7 @@ async function updateMyAvatar(fileOrDataUrl) {
 
   await rpc('api_update_my_avatar', { p_avatar_url: publicUrl })
   return { ...session.profile, avatar_url: publicUrl }
+  */
 }
 
 async function needsFirstOwner() {
