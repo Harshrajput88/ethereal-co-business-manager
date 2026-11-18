@@ -1,870 +1,562 @@
-import { useEffect, useState } from 'react'
-import { supabase } from './lib/supabase'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { api, backendInfo, initializeApi } from './lib/api'
+import {
+  getIntegrationStatus,
+  subscribeIntegrationStatus
+} from './lib/integrationStatus'
+import { AppContext } from './AppContext'
+import { formatDate, titleCase } from './lib/format'
+import { useApiData } from './hooks/useApiData'
+import Icon from './components/Icon'
+import { Avatar, Badge, InlineNote } from './components/ui'
+import Auth from './pages/Auth'
+import Overview from './pages/Overview'
+import Sales from './pages/Sales'
+import Payments from './pages/Payments'
+import Shops from './pages/Shops'
+import Inventory from './pages/Inventory'
+import Returns from './pages/Returns'
+import Expenses from './pages/Expenses'
+import Invoices from './pages/Invoices'
+import Reports from './pages/Reports'
+import Team from './pages/Team'
+import Settings from './pages/Settings'
+import Profile from './pages/Profile'
 import './App.css'
 
-const menuItems = [
-  { name: 'Overview', icon: '▦' },
-  { name: 'Sales', icon: '₹' },
-  { name: 'Inventory', icon: '◇' },
-  { name: 'Expenses', icon: '↗' },
-  { name: 'Customers', icon: '♙' },
-  { name: 'Reports', icon: '▥' },
-  { name: 'Profile', icon: '◎' },
-  { name: 'Team Management', icon: '♙' }
-]
-
-const products = [
-  { name: '500 ML Water', detail: '24 bottles per carton' },
-  { name: '1 Litre Water', detail: '12 bottles per carton' }
-]
-
-function App() {
-  const [session, setSession] = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [activePage, setActivePage] = useState('Overview')
-
-  const [loading, setLoading] = useState(true)
-  const [connectionStatus, setConnectionStatus] = useState('Checking...')
-  const [authMode, setAuthMode] = useState('login')
-
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
-  const [team, setTeam] = useState([])
-  const [teamLoading, setTeamLoading] = useState(false)
-
-  const today = new Intl.DateTimeFormat('en-IN', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'Asia/Kolkata'
-  }).format(new Date())
-
-  // LOAD PROFILE
-
-  async function loadProfile(user) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (error) {
-      console.error('Profile loading error:', error.message)
-      setProfile(null)
-      setError('Unable to load your profile. Please contact the owner.')
-      return
-    }
-
-    setProfile(data)
-    setError('')
-  }
-
-  // CHECK AUTHENTICATION
-
-  useEffect(() => {
-    let mounted = true
-
-    async function initialize() {
-      try {
-        const { data, error } = await supabase.auth.getSession()
-
-        if (error) throw error
-
-        if (data.session && mounted) {
-          setSession(data.session)
-          await loadProfile(data.session.user)
-        }
-      } catch (err) {
-        console.error(err.message)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    initialize()
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((event, newSession) => {
-      if (!mounted) return
-
-      setSession(newSession)
-
-      if (event === 'SIGNED_OUT') {
-        setProfile(null)
-        setActivePage('Overview')
-      }
-
-      if (newSession && event === 'SIGNED_IN') {
-        setTimeout(() => {
-          if (mounted) loadProfile(newSession.user)
-        }, 0)
-      }
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  // CONNECTION CHECK
-
-  useEffect(() => {
-    async function checkConnection() {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/health`,
-          {
-            headers: {
-              apikey:
-                import.meta.env.VITE_SUPABASE_ANON_KEY ||
-                import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-            }
-          }
-        )
-
-        setConnectionStatus(
-          response.ok ? 'Connected' : 'Disconnected'
-        )
-      } catch {
-        setConnectionStatus('Disconnected')
-      }
-    }
-
-    checkConnection()
-  }, [])
-
-  // LOGIN
-
-  async function handleLogin(e) {
-    e.preventDefault()
-    setError('')
-    setMessage('')
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (error) throw error
-
-      setMessage('Login successful. Loading your dashboard...')
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  // REGISTRATION
-
-  async function handleSignup(e) {
-    e.preventDefault()
-    setError('')
-    setMessage('')
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName.trim()
-          },
-          emailRedirectTo: window.location.origin
-        }
-      })
-
-      if (error) throw error
-
-      if (data.session) {
-        setMessage('Account created. Please wait for owner approval.')
-      } else {
-        setMessage(
-          'Registration successful! Verify your email, then wait for owner approval.'
-        )
-      }
-
-      setAuthMode('login')
-      setPassword('')
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  // PROFILE PICTURE UPLOAD
-
-async function handleAvatarUpload(e) {
-  const file = e.target.files?.[0]
-  if (!file) return
-
-  if (!file.type.startsWith('image/')) {
-    alert('Please select an image.')
-    return
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Image must be smaller than 5 MB.')
-    return
-  }
-
-  try {
-    const filePath = `${session.user.id}/${Date.now()}-${file.name}`
-
-    const { error: uploadError } = await supabase.storage
-      .from('profile-picture')
-      .upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    const { data } = supabase.storage
-      .from('profile-picture')
-      .getPublicUrl(filePath)
-
-    const { error: updateError } = await supabase.rpc(
-      'update_my_avatar',
-      { image_url: data.publicUrl }
-    )
-
-    if (updateError) throw updateError
-
-    setProfile(prev => ({
-      ...prev,
-      avatar_url: data.publicUrl
-    }))
-
-    alert('Profile picture updated successfully!')
-  } catch (error) {
-    alert(error.message)
-  }
-
-  e.target.value = ''
+const PAGES = {
+  overview: { title: 'Overview', description: 'Today at a glance' },
+  sales: { title: 'Sales', description: 'Orders and invoices' },
+  payments: { title: 'Payments', description: 'Collections and verification' },
+  shops: { title: 'Shops', description: 'Route book' },
+  inventory: { title: 'Inventory', description: 'Godown stock' },
+  returns: { title: 'Returns', description: 'Stock coming back' },
+  expenses: { title: 'Expenses', description: 'Business spend' },
+  invoices: { title: 'Invoices', description: 'Documents' },
+  reports: { title: 'Reports', description: 'Performance and exports' },
+  team: { title: 'Team', description: 'People and access' },
+  settings: { title: 'Settings', description: 'Workspace configuration' },
+  profile: { title: 'Profile', description: 'Your account' }
 }
-  
-  // LOGOUT
 
-  async function handleLogout() {
-    const { error } = await supabase.auth.signOut()
+const NAV_ICONS = {
+  overview: 'overview',
+  sales: 'sales',
+  payments: 'payments',
+  shops: 'shop',
+  inventory: 'inventory',
+  returns: 'returns',
+  expenses: 'expenses',
+  invoices: 'invoices',
+  reports: 'reports',
+  team: 'team',
+  settings: 'settings',
+  profile: 'profile'
+}
 
-    if (error) {
-      setError(error.message)
-    } else {
-      setSession(null)
-      setProfile(null)
-    }
-  }
-
-  // OWNER: LOAD TEAM
-
-  async function loadTeam() {
-    setTeamLoading(true)
-    setError('')
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, role, status, created_at')
-      .eq('role', 'salesperson')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      setError(error.message)
-    } else {
-      setTeam(data || [])
-    }
-
-    setTeamLoading(false)
-  }
-
-  useEffect(() => {
-    if (
-      profile?.role === 'owner' &&
-      profile?.status === 'approved' &&
-      activePage === 'Team Management'
-    ) {
-      loadTeam()
-    }
-  }, [profile, activePage])
-
-  // OWNER: APPROVE / DISABLE
-
-  async function updateSalesperson(id, status) {
-    setError('')
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ status })
-      .eq('id', id)
-      .eq('role', 'salesperson')
-
-    if (error) {
-      setError(error.message)
-      return
-    }
-
-    await loadTeam()
-  }
-
-  // LOADING SCREEN
-
-  if (loading) {
-    return (
-      <div className="auth-screen">
-        <div className="auth-card">
-          <h1>ETHEREAL</h1>
-          <p>Loading Business Manager...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // AUTHENTICATION SCREEN
-
-  if (!session) {
-    return (
-      <div className="auth-screen">
-        <div className="auth-card">
-
-          <div className="auth-brand">
-            <div>ETHEREAL</div>
-            <span>Co.</span>
-            <p>PURE BY NATURE · SAFE FOR LIFE</p>
-          </div>
-
-          <h2>
-            {authMode === 'login'
-              ? 'Welcome Back'
-              : 'Join Ethereal Co.'}
-          </h2>
-
-          <p className="auth-description">
-            {authMode === 'login'
-              ? 'Sign in to manage your business.'
-              : 'Create your salesperson account.'}
-          </p>
-
-          <form
-            onSubmit={
-              authMode === 'login'
-                ? handleLogin
-                : handleSignup
-            }
-          >
-
-            {authMode === 'signup' && (
-              <div className="form-group">
-                <label>Full Name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
-            )}
-
-            <div className="form-group">
-              <label>Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Enter password"
-                minLength={8}
-                required
-              />
-            </div>
-
-            {error && (
-              <div className="auth-error">{error}</div>
-            )}
-
-            {message && (
-              <div className="auth-success">{message}</div>
-            )}
-
-            <button className="auth-submit" type="submit">
-              {authMode === 'login'
-                ? 'Sign In'
-                : 'Create Account'}
-            </button>
-
-          </form>
-
-          <div className="auth-switch">
-            {authMode === 'login' ? (
-              <>
-                New salesperson?
-                <button onClick={() => {
-                  setAuthMode('signup')
-                  setError('')
-                  setMessage('')
-                }}>
-                  Register
-                </button>
-              </>
-            ) : (
-              <>
-                Already registered?
-                <button onClick={() => {
-                  setAuthMode('login')
-                  setError('')
-                  setMessage('')
-                }}>
-                  Sign In
-                </button>
-              </>
-            )}
-          </div>
-
-          <div className="auth-footer">
-            ETHEREAL CO. © 2026
-          </div>
-
-        </div>
-      </div>
-    )
-  }
-
-  // ACCOUNT STATUS
-
-  if (!profile) {
-    return (
-      <div className="auth-screen">
-        <div className="auth-card">
-          <h2>Profile unavailable</h2>
-          <p>{error || 'Your profile could not be loaded.'}</p>
-          <button className="auth-submit" onClick={handleLogout}>
-            Sign Out
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (profile.status === 'pending') {
-    return (
-      <div className="auth-screen">
-        <div className="auth-card">
-          <div className="auth-brand">
-            <div>ETHEREAL</div>
-            <span>Co.</span>
-          </div>
-
-          <h2>Approval Pending</h2>
-
-          <p className="auth-description">
-            Hello {profile.full_name}, your registration is
-            awaiting approval from the business owner.
-          </p>
-
-          <div className="status-message">
-            Your account is registered but access has not
-            yet been approved.
-          </div>
-
-          <button className="auth-submit" onClick={handleLogout}>
-            Sign Out
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (profile.status !== 'approved') {
-    return (
-      <div className="auth-screen">
-        <div className="auth-card">
-          <h2>Account Disabled</h2>
-          <p className="auth-description">
-            Your account access has been disabled.
-            Please contact the owner.
-          </p>
-          <button className="auth-submit" onClick={handleLogout}>
-            Sign Out
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // MAIN DASHBOARD
-
-  const isOwner = profile.role === 'owner'
-
+function ToastStack({ toasts }) {
   return (
-    <div className="app-shell">
-
-      <aside className="sidebar">
-
-        <div className="brand-lockup">
-          <div className="brand-trees">♠ ♠ ♠</div>
-          <div className="brand-name">ETHEREAL</div>
-          <div className="brand-co">Co.</div>
-          <div className="brand-rule" />
-          <div className="brand-subtitle">BUSINESS MANAGER</div>
+    <div className="toast-stack" aria-live="polite" aria-atomic="false">
+      {toasts.map(toast => (
+        <div key={toast.id} className={`toast toast-${toast.tone}`}>
+          <Icon
+            name={toast.tone === 'danger' ? 'alert' : toast.tone === 'warning' ? 'clock' : 'check'}
+            size={18}
+          />
+          <span>{toast.message}</span>
         </div>
-
-        <div className="nav-label">MAIN MENU</div>
-
-        <nav className="sidebar-nav">
-          {menuItems
-            .filter(item =>
-              item.name !== 'Team Management' || isOwner
-            )
-            .map(item => (
-              <button
-                key={item.name}
-                className={`nav-item ${
-                  activePage === item.name ? 'active' : ''
-                }`}
-                onClick={() => setActivePage(item.name)}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span>{item.name}</span>
-              </button>
-            ))}
-        </nav>
-
-        <div className="sidebar-art" />
-
-        <div className="sidebar-tagline">
-          PURE BY NATURE<br />
-          SAFE FOR LIFE
-        </div>
-
-        <div className="sidebar-tagline-rule" />
-
-        <div className="sidebar-profile">
-          <div className="profile-avatar">
-            {profile.full_name?.charAt(0).toUpperCase()}
-          </div>
-
-          <div>
-            <strong>{profile.full_name}</strong>
-            <span>{profile.role === 'owner' ? 'Owner' : 'Salesperson'}</span>
-          </div>
-        </div>
-
-      </aside>
-
-      <main className="main-area">
-
-        <header className="topbar">
-
-          <div className="topbar-title">
-            <h2>{activePage}</h2>
-            <p>Welcome to Ethereal Business Manager</p>
-          </div>
-
-          <div className="topbar-actions">
-
-            <span className={`connection-dot ${
-              connectionStatus === 'Connected' ? 'is-online' : ''
-            }`} />
-
-            <span className="connection-text">
-              {connectionStatus}
-            </span>
-
-            <div className="top-avatar">
-              {profile.full_name?.charAt(0).toUpperCase()}
-            </div>
-
-            <button
-              className="logout-button"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-
-          </div>
-
-        </header>
-
-        {activePage === 'Overview' ? (
-
-          <div className="dashboard-content">
-
-            <section className="hero-banner">
-              <img
-                src="/assets/ethereal-hero.png"
-                alt="Ethereal Co. mountain and lake"
-              />
-            </section>
-
-            <section className="stats-grid">
-
-              {[
-                ["Today's Sales", '₹0.00', 'Total sales today', '₹', 'green'],
-                ['Amount Collected', '₹0.00', 'Payments received today', '↓', 'blue'],
-                ['Outstanding', '₹0.00', 'Pending customer payments', '!', 'orange'],
-                ['Transactions', '0', 'Sales recorded today', '#', 'green']
-              ].map(stat => (
-                <article className="stat-card" key={stat[0]}>
-                  <div className={`stat-icon ${stat[4]}`}>
-                    {stat[3]}
-                  </div>
-                  <div className="stat-copy">
-                    <span className="stat-title">{stat[0]}</span>
-                    <strong>{stat[1]}</strong>
-                    <small>{stat[2]}</small>
-                  </div>
-                </article>
-              ))}
-
-            </section>
-
-            <section className="section-block">
-
-              <div className="section-heading">
-                <div>
-                  <h3>Inventory Overview</h3>
-                  <p>Current available stock</p>
-                </div>
-
-                <button
-                  className="link-button"
-                  onClick={() => setActivePage('Inventory')}
-                >
-                  View Inventory →
-                </button>
-              </div>
-
-              <div className="inventory-grid">
-
-                {products.map(product => (
-                  <article className="inventory-card" key={product.name}>
-                    <div className="bottle-icon">
-                      <svg viewBox="0 0 32 58">
-                        <path d="M11 3h10v7l4 5v34a5 5 0 0 1-5 5H12a5 5 0 0 1-5-5V15l4-5z" />
-                        <path d="M11 10h10M8 18h16" />
-                      </svg>
-                    </div>
-
-                    <div className="product-copy">
-                      <strong>{product.name}</strong>
-                      <span>{product.detail}</span>
-                    </div>
-
-                    <div className="inventory-divider" />
-
-                    <div className="stock-value">
-                      <strong>0</strong>
-                      <span>Cartons in stock</span>
-                    </div>
-
-                    <div className="inventory-mountain" />
-
-                    <div className="inventory-footer">
-                      ◇ <span>Sold today: 0 cartons</span>
-                    </div>
-                  </article>
-                ))}
-
-              </div>
-            </section>
-
-            <section className="section-block transactions-section">
-
-              <div className="section-heading">
-                <div>
-                  <h3>Today's Transactions</h3>
-                  <p>Sales recorded on {today}</p>
-                </div>
-
-                <button
-                  className="link-button"
-                  onClick={() => setActivePage('Sales')}
-                >
-                  View All →
-                </button>
-              </div>
-
-              <div className="transactions-card">
-                <div className="table-head">
-                  <span>TIME</span>
-                  <span>INVOICE</span>
-                  <span>CUSTOMER</span>
-                  <span>AMOUNT</span>
-                  <span>PAYMENT</span>
-                </div>
-
-                <div className="empty-transactions">
-                  <div className="receipt-icon">▤</div>
-                  <strong>No sales recorded today</strong>
-                </div>
-              </div>
-
-            </section>
-
-            <footer className="page-footer">
-              ETHEREAL CO. • PURE BY NATURE, SAFE FOR LIFE
-              
-            </footer>
-                      </div>
-
-        ) : activePage === 'Profile' ? (
-
-          <div className="team-page">
-            <div className="section-heading">
-              <div>
-                <h3>My Profile</h3>
-                <p>Your Ethereal Business Manager account details.</p>
-              </div>
-            </div>
-
-            <div className="transactions-card profile-page-card">
-              <div className="profile-picture-section">
-                <label className="profile-picture-upload">
-                  {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt="Profile" />
-                  ) : (
-                    <span>{profile.full_name?.charAt(0).toUpperCase()}</span>
-                  )}
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                  />
-                </label>
-                <p>Click to upload or change your photo</p>
-              </div>
-
-              <div className="profile-details">
-                <h2>{profile.full_name}</h2>
-                <p>{profile.email}</p>
-
-                <div className="profile-detail-row">
-                  <span>Account Type</span>
-                  <strong>{isOwner ? 'Owner' : 'Salesperson'}</strong>
-                </div>
-
-                <div className="profile-detail-row">
-                  <span>Account Status</span>
-                  <strong>{profile.status}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        ) : activePage === 'Team Management' && isOwner ? (
-
-          <div className="team-page">
-            <div className="section-heading">
-              <div>
-                <h3>Team Management</h3>
-                <p>Review and manage salesperson accounts.</p>
-              </div>
-
-        
-              <button className="link-button" onClick={loadTeam}>
-                Refresh ↻
-              </button>
-            </div>
-
-            {error && <div className="auth-error">{error}</div>}
-
-            {teamLoading ? (
-              <p>Loading team members...</p>
-            ) : (
-
-              <div className="team-list">
-
-                {team.length === 0 ? (
-                  <div className="transactions-card empty-transactions">
-                    No salesperson registrations yet.
-                  </div>
-                ) : (
-
-                  team.map(person => (
-                    <div className="team-member" key={person.id}>
-
-                      <div className="profile-avatar">
-                        {person.full_name?.charAt(0).toUpperCase()}
-                      </div>
-
-                      <div className="team-member-info">
-                        <strong>{person.full_name}</strong>
-                        <span>{person.email}</span>
-                        <small>Status: {person.status}</small>
-                      </div>
-
-                      <div className="team-actions">
-
-                        {person.status === 'pending' && (
-                          <button
-                            onClick={() =>
-                              updateSalesperson(person.id, 'approved')
-                            }
-                          >
-                            Approve
-                          </button>
-                        )}
-
-                        {person.status === 'approved' && (
-                          <button
-                            className="disable-button"
-                            onClick={() =>
-                              updateSalesperson(person.id, 'disabled')
-                            }
-                          >
-                            Disable
-                          </button>
-                        )}
-
-                        {person.status === 'disabled' && (
-                          <button
-                            onClick={() =>
-                              updateSalesperson(person.id, 'approved')
-                            }
-                          >
-                            Re-enable
-                          </button>
-                        )}
-
-                      </div>
-
-                    </div>
-                  ))
-
-                )}
-
-              </div>
-            )}
-
-          </div>
-
-        ) : (
-
-          <div className="coming-soon">
-            <div className="coming-soon-mark">✦</div>
-            <h2>{activePage}</h2>
-            <p>This section is ready for the next development step.</p>
-            <span>Coming next</span>
-          </div>
-
-        )}
-
-      </main>
+      ))}
     </div>
   )
 }
 
-export default App
+function StartupScreen({ error, onRetry }) {
+  return (
+    <main className="startup-screen">
+      <div className="startup-brand">
+        <p className="auth-mark">
+          <span className="auth-trees">♣♣♣</span>
+          <span className="auth-brand-name">Ethereal</span>
+          <span className="auth-brand-co">Co.</span>
+        </p>
+        <p className="auth-brand-sub">Business Manager</p>
+      </div>
+      {error ? (
+        <div className="startup-card">
+          <Icon name="alert" size={28} />
+          <h1>The workspace could not start</h1>
+          <p>{error}</p>
+          <button type="button" className="button-primary" onClick={onRetry}>
+            Try again
+          </button>
+        </div>
+      ) : (
+        <div className="startup-loading">
+          <span className="spinner large" />
+          <p>Opening the workspace…</p>
+        </div>
+      )}
+    </main>
+  )
+}
+
+function AccountScreen({ profile, needsOwner, onClaimOwner, onSignOut, busy, error }) {
+  const disabled = profile?.status === 'disabled'
+  return (
+    <main className="account-screen">
+      <section className="account-card">
+        <span className={`account-icon ${disabled ? 'danger' : ''}`}>
+          <Icon name={disabled ? 'lock' : 'clock'} size={28} />
+        </span>
+        <p className="page-eyebrow">Ethereal Co. Business Manager</p>
+        <h1>{disabled ? 'Your account is disabled' : 'Your account is waiting for approval'}</h1>
+        <p>
+          {disabled
+            ? 'An owner or admin has disabled access for this account. Contact the owner if this was a mistake.'
+            : 'An owner or admin needs to approve your account before you can use the workspace.'}
+        </p>
+        <div className="account-person">
+          <Avatar name={profile?.full_name} url={profile?.avatar_url} size={48} />
+          <div>
+            <strong>{profile?.full_name}</strong>
+            <span>{profile?.email}</span>
+          </div>
+          <Badge tone={disabled ? 'danger' : 'warning'}>{titleCase(profile?.status || 'pending')}</Badge>
+        </div>
+        {needsOwner && (
+          <InlineNote tone="info">
+            No owner account exists yet. If you are the business owner, claim this workspace now to
+            approve yourself and everyone else.
+          </InlineNote>
+        )}
+        {error && (
+          <div className="inline-note note-danger" role="alert">
+            <Icon name="alert" size={17} />
+            <div>{error}</div>
+          </div>
+        )}
+        <div className="button-row">
+          <button type="button" className="button-ghost" onClick={onSignOut}>
+            <Icon name="logout" size={16} /> Sign out
+          </button>
+          {needsOwner && (
+            <button type="button" className="button-primary" onClick={onClaimOwner} disabled={busy}>
+              {busy ? 'Claiming…' : 'Claim owner account'}
+            </button>
+          )}
+        </div>
+      </section>
+    </main>
+  )
+}
+
+function SessionErrorScreen({ message, onSignOut, onRetry }) {
+  return (
+    <main className="account-screen">
+      <section className="account-card">
+        <span className="account-icon danger">
+          <Icon name="alert" size={28} />
+        </span>
+        <p className="page-eyebrow">Ethereal Co. Business Manager</p>
+        <h1>Your profile could not be loaded</h1>
+        <p>{message || 'The account exists but its profile is unavailable. Ask the owner to check your access.'}</p>
+        <div className="button-row">
+          <button type="button" className="button-secondary" onClick={onRetry}>
+            Retry profile load
+          </button>
+        <button type="button" className="button-primary" onClick={onSignOut}>
+          Sign out
+        </button>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+export default function App() {
+  const [ready, setReady] = useState(false)
+  const [initError, setInitError] = useState('')
+  const [initAttempt, setInitAttempt] = useState(0)
+  const [backend, setBackend] = useState(null)
+  const [integration, setIntegration] = useState(getIntegrationStatus)
+  const [profile, setProfile] = useState(null)
+  const [hasSession, setHasSession] = useState(false)
+  const [profileError, setProfileError] = useState('')
+  const [activePage, setActivePage] = useState('overview')
+  const [version, setVersion] = useState(0)
+  const [toasts, setToasts] = useState([])
+  const [needsOwner, setNeedsOwner] = useState(false)
+  const [claimBusy, setClaimBusy] = useState(false)
+  const [claimError, setClaimError] = useState('')
+
+  const notify = useCallback((message, tone = 'success') => {
+    const id =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`
+    setToasts(current => [...current, { id, message, tone }])
+    window.setTimeout(() => {
+      setToasts(current => current.filter(toast => toast.id !== id))
+    }, 4200)
+  }, [])
+
+  const refresh = useCallback(() => {
+    setVersion(current => current + 1)
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+    setReady(false)
+    setInitError('')
+    initializeApi()
+      .then(async () => {
+        if (!mounted) return
+        setBackend(backendInfo())
+        const session = await api.getSession()
+        if (!mounted) return
+        setHasSession(Boolean(session?.user))
+        setProfile(session?.profile || null)
+        setProfileError(session?.profileError || '')
+        setReady(true)
+      })
+      .catch(error => {
+        if (!mounted) return
+        setInitError(error.message || 'The workspace could not start.')
+        setReady(true)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [initAttempt])
+
+  useEffect(() => {
+    if (!ready || !backend) return undefined
+    let unsubscribe
+    try {
+      unsubscribe = api.onAuthChange(async () => {
+        const session = await api.getSession()
+        setHasSession(Boolean(session?.user))
+        setProfile(session?.profile || null)
+        setProfileError(session?.profileError || '')
+      })
+    } catch {
+      // The backend may not expose auth events; explicit sign-in handles it.
+    }
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe()
+    }
+  }, [ready, backend])
+
+  const isApproved = profile?.status === 'approved'
+  const dashboard = useApiData(() => api.getDashboard(), [version], {
+    enabled: ready && isApproved
+  })
+  const metrics = dashboard.data
+
+  useEffect(
+    () => subscribeIntegrationStatus(setIntegration),
+    []
+  )
+
+  useEffect(() => {
+    if (!ready || !profile || isApproved) {
+      setNeedsOwner(false)
+      return
+    }
+    let cancelled = false
+    api
+      .needsFirstOwner()
+      .then(value => {
+        if (!cancelled) setNeedsOwner(Boolean(value))
+      })
+      .catch(() => {
+        if (!cancelled) setNeedsOwner(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [ready, profile, isApproved, version])
+
+  useEffect(() => {
+    document.title = `${PAGES[activePage]?.title || 'Overview'} · Ethereal Co.`
+  }, [activePage])
+
+  const signOut = useCallback(async () => {
+    try {
+      await api.signOut()
+    } catch {
+      // Signing out locally is still safe if the network call fails.
+    }
+    setHasSession(false)
+    setProfile(null)
+    setProfileError('')
+    setActivePage('overview')
+  }, [])
+
+  const retryProfile = useCallback(async () => {
+    setProfileError('')
+    try {
+      const session = await api.getSession()
+      setHasSession(Boolean(session?.user))
+      setProfile(session?.profile || null)
+      setProfileError(session?.profileError || '')
+    } catch (error) {
+      setProfileError(error.message || 'The profile could not be loaded. Retry.')
+    }
+  }, [])
+
+  async function claimOwner() {
+    setClaimError('')
+    setClaimBusy(true)
+    try {
+      await api.claimOwner()
+      const session = await api.getSession()
+      setProfile(session?.profile || null)
+      setHasSession(Boolean(session?.user))
+      setNeedsOwner(false)
+      notify('Owner account claimed. You can now approve the team.', 'success')
+      refresh()
+    } catch (error) {
+      setClaimError(error.message)
+    } finally {
+      setClaimBusy(false)
+    }
+  }
+
+  const isAdmin = profile?.role === 'owner' || profile?.role === 'admin'
+  const isOwner = profile?.role === 'owner'
+
+  const nav = useMemo(() => {
+    const items = [
+      { id: 'overview', label: 'Overview' },
+      { id: 'sales', label: 'Sales', badge: metrics?.pending_credit_sales },
+      { id: 'payments', label: 'Payments', badge: metrics?.pending_payments },
+      { id: 'shops', label: 'Shops', badge: metrics?.pending_shops },
+      { id: 'inventory', label: 'Inventory' },
+      { id: 'returns', label: 'Returns', badge: metrics?.pending_returns },
+      { id: 'expenses', label: 'Expenses', badge: metrics?.pending_expenses },
+      { id: 'invoices', label: 'Invoices' },
+      { id: 'reports', label: 'Reports' }
+    ]
+    if (isAdmin) {
+      items.push({ id: 'team', label: 'Team', badge: metrics?.pending_employees })
+      items.push({ id: 'settings', label: 'Settings' })
+    }
+    items.push({ id: 'profile', label: 'Profile' })
+    return items
+  }, [isAdmin, metrics])
+
+  const pendingTotal =
+    (metrics?.pending_credit_sales || 0) +
+    (metrics?.pending_payments || 0) +
+    (metrics?.pending_shops || 0) +
+    (metrics?.pending_returns || 0) +
+    (metrics?.pending_expenses || 0) +
+    (metrics?.pending_employees || 0)
+
+  const pendingTarget = metrics
+    ? metrics.pending_credit_sales
+      ? 'sales'
+      : metrics.pending_payments
+        ? 'payments'
+        : metrics.pending_shops
+          ? 'shops'
+          : metrics.pending_returns
+            ? 'returns'
+            : metrics.pending_expenses
+              ? 'expenses'
+              : metrics.pending_employees
+                ? 'team'
+                : null
+    : null
+
+  const contextValue = useMemo(
+    () => ({
+      profile,
+      setProfile,
+      mode: backend?.mode || 'local',
+      isAdmin,
+      isOwner,
+      version,
+      refresh,
+      notify,
+      signOut
+    }),
+    [profile, backend, isAdmin, isOwner, version, refresh, notify, signOut]
+  )
+
+  if (!ready) {
+    return <StartupScreen error={initError} onRetry={() => setInitAttempt(current => current + 1)} />
+  }
+
+  if (!profile) {
+    if (hasSession && profileError) {
+      return <SessionErrorScreen message={profileError} onSignOut={signOut} onRetry={retryProfile} />
+    }
+    return <Auth onSignedIn={nextProfile => {
+      setProfile(nextProfile)
+      setHasSession(true)
+      setProfileError('')
+      setActivePage('overview')
+    }} />
+  }
+
+  if (!isApproved) {
+    return (
+      <AccountScreen
+        profile={profile}
+        needsOwner={needsOwner}
+        onClaimOwner={claimOwner}
+        onSignOut={signOut}
+        busy={claimBusy}
+        error={claimError}
+      />
+    )
+  }
+
+  const page = PAGES[activePage] || PAGES.overview
+
+  function renderPage() {
+    switch (activePage) {
+      case 'sales':
+        return <Sales />
+      case 'payments':
+        return <Payments />
+      case 'shops':
+        return <Shops />
+      case 'inventory':
+        return <Inventory />
+      case 'returns':
+        return <Returns />
+      case 'expenses':
+        return <Expenses />
+      case 'invoices':
+        return <Invoices />
+      case 'reports':
+        return <Reports />
+      case 'team':
+        return isAdmin ? <Team /> : <Overview onNavigate={setActivePage} />
+      case 'settings':
+        return isAdmin ? <Settings /> : <Overview onNavigate={setActivePage} />
+      case 'profile':
+        return <Profile />
+      default:
+        return <Overview onNavigate={setActivePage} />
+    }
+  }
+
+  return (
+    <AppContext.Provider value={contextValue}>
+      <div className="app-shell">
+        <aside className="sidebar" aria-label="Main navigation">
+          <button type="button" className="brand-lockup" onClick={() => setActivePage('overview')}>
+            <span className="brand-trees" aria-hidden="true">
+              ♣♣♣
+            </span>
+            <span className="brand-name">Ethereal</span>
+            <span className="brand-co">Co.</span>
+            <span className="brand-rule" aria-hidden="true" />
+            <span className="brand-subtitle">Business Manager</span>
+          </button>
+          <p className="nav-label">Workspace</p>
+          <nav className="sidebar-nav">
+            {nav.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                className={`nav-item ${activePage === item.id ? 'active' : ''}`}
+                onClick={() => setActivePage(item.id)}
+                aria-current={activePage === item.id ? 'page' : undefined}
+              >
+                <span className="nav-icon">
+                  <Icon name={NAV_ICONS[item.id]} size={19} />
+                </span>
+                <span>{item.label}</span>
+                {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
+              </button>
+            ))}
+          </nav>
+          <div className="sidebar-art" aria-hidden="true" />
+          <p className="sidebar-tagline">Pure water, delivered with care</p>
+          <div className="sidebar-tagline-rule" aria-hidden="true" />
+          <div className="sidebar-user">
+            <Avatar name={profile.full_name} url={profile.avatar_url} size={36} />
+            <div>
+              <strong>{profile.full_name}</strong>
+              <span>{titleCase(profile.role)}</span>
+            </div>
+            <button type="button" className="sidebar-signout" onClick={signOut} aria-label="Sign out">
+              <Icon name="logout" size={17} />
+            </button>
+          </div>
+          <p className="sidebar-mode" title={backend?.lastError || backend?.reason}>
+            <span className={`connection-dot ${backend?.mode === 'supabase' && integration.connection === 'connected' && integration.businessApi === 'ready' ? 'is-online' : ''}`} />
+            {backend?.mode === 'local'
+              ? 'Local demo'
+              : backend?.mode === 'unconfigured'
+                ? 'Cloud not configured'
+                : integration.businessApi === 'error'
+                  ? 'Cloud API error'
+                  : integration.connection === 'disconnected'
+                    ? 'Cloud disconnected'
+                    : integration.businessApi === 'ready'
+                      ? 'Cloud · API responding'
+                      : 'Cloud · API checking'}
+          </p>
+        </aside>
+
+        <div className="main-area">
+          <header className="topbar">
+            <div className="topbar-title">
+              <h2>{page.title}</h2>
+              <p>
+                {formatDate(new Date())} · {page.description}
+              </p>
+            </div>
+            <div className="topbar-actions">
+              {isAdmin && pendingTotal > 0 && pendingTarget && (
+                <button
+                  type="button"
+                  className="topbar-alert"
+                  onClick={() => setActivePage(pendingTarget)}
+                  title="Open the next thing waiting for approval"
+                >
+                  <Icon name="alert" size={16} />
+                  <span>{pendingTotal} waiting</span>
+                </button>
+              )}
+              <span className={`connection-dot ${backend?.mode === 'supabase' && integration.connection === 'connected' && integration.businessApi === 'ready' ? 'is-online' : ''}`} />
+              <span className="connection-text" title={integration.lastError || backend?.reason}>
+                {backend?.mode === 'local'
+                  ? 'Demo'
+                  : backend?.mode === 'unconfigured'
+                    ? 'Not configured'
+                    : integration.businessApi === 'error'
+                      ? 'API error'
+                      : integration.connection === 'disconnected'
+                        ? 'Disconnected'
+                        : integration.businessApi === 'ready'
+                          ? 'Supabase · API responding'
+                          : 'Supabase · Checking'}
+              </span>
+              <button
+                type="button"
+                className="top-avatar"
+                onClick={() => setActivePage('profile')}
+                aria-label="Open profile"
+              >
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" />
+                ) : (
+                  <span>{profile.full_name?.slice(0, 1)}</span>
+                )}
+              </button>
+            </div>
+          </header>
+          <div className="dashboard-content">{renderPage()}</div>
+        </div>
+        <ToastStack toasts={toasts} />
+      </div>
+    </AppContext.Provider>
+  )
+}
