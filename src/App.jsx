@@ -100,7 +100,7 @@ function StartupScreen({ error, onRetry }) {
   )
 }
 
-function AccountScreen({ profile, needsOwner, onClaimOwner, onSignOut, busy, error }) {
+function AccountScreen({ profile, needsOwner, allowOwnerClaim, onClaimOwner, onSignOut, busy, error }) {
   const disabled = profile?.status === 'disabled'
   return (
     <main className="account-screen">
@@ -125,8 +125,9 @@ function AccountScreen({ profile, needsOwner, onClaimOwner, onSignOut, busy, err
         </div>
         {needsOwner && (
           <InlineNote tone="info">
-            No owner account exists yet. If you are the business owner, claim this workspace now to
-            approve yourself and everyone else.
+            {allowOwnerClaim
+              ? 'No owner account exists yet. Claim the local demo workspace to continue.'
+              : 'Owner setup is restricted to the business operator. Contact the Ethereal Co. system administrator to activate the designated owner account.'}
           </InlineNote>
         )}
         {error && (
@@ -139,9 +140,9 @@ function AccountScreen({ profile, needsOwner, onClaimOwner, onSignOut, busy, err
           <button type="button" className="button-ghost" onClick={onSignOut}>
             <Icon name="logout" size={16} /> Sign out
           </button>
-          {needsOwner && (
+          {needsOwner && allowOwnerClaim && (
             <button type="button" className="button-primary" onClick={onClaimOwner} disabled={busy}>
-              {busy ? 'Claiming…' : 'Claim owner account'}
+              {busy ? 'Claiming…' : 'Claim demo owner account'}
             </button>
           )}
         </div>
@@ -406,6 +407,7 @@ export default function App() {
       <AccountScreen
         profile={profile}
         needsOwner={needsOwner}
+        allowOwnerClaim={backend?.mode === 'local'}
         onClaimOwner={claimOwner}
         onSignOut={signOut}
         busy={claimBusy}
