@@ -1,6 +1,6 @@
 # Ethereal Co. — Staging Deployment Runbook
 
-**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. The security review found release-blocking authorization, return-limit, and financial-concurrency defects. Resolve them in separately reviewed migration changes while preserving all eight reviewed release migrations and both historical drafts.
+**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. Local remediation and regression coverage have since been added for the previously identified authorization, return-limit, payment-allocation, idempotency, and owner-bootstrap issues; the local suite passes. That is not a substitute for independent security review or a real Supabase-compatible rehearsal with actual concurrent database sessions. Keep the eight-file release set and both historical drafts unchanged until those external gates are complete.
 
 ## Target and scope
 
@@ -95,8 +95,8 @@ Do not proceed until all are true:
 
 - Confirm Auth is enabled and the signup flow generates an `auth.users` row. Migration 1 creates `api_handle_new_auth_user()` and installs `on_auth_user_created` only if a trigger with that name is absent.
 - Verify there is exactly one intended signup trigger and that it creates a pending salesperson profile without trusting role/status from user metadata.
-- Resolve the current first-owner race before deployment: `api_claim_owner()` checks for an owner and updates the caller without a serialization/unique invariant. Concurrent claims can create multiple owners.
-- After the SQL fix and explicit approval, create/use a controlled owner Auth account, verify its profile, and claim owner exactly once. Never manually promote an account using browser-supplied metadata.
+- Migration 008 intentionally disables self-service owner claiming; `api_claim_owner()` must remain unavailable to `PUBLIC`, `anon`, and `authenticated`.
+- Create/invite the designated owner through the trusted Auth operator workflow, verify the email and Auth user ID out-of-band, and provision that profile using the operator-only SQL above. Never use a browser RPC or browser-supplied metadata to promote an account.
 - Test pending, approved, disabled, salesperson, admin, and owner authorization. Disabled/pending accounts must not receive list data or invoke privileged operations.
 
 ## Storage setup
@@ -114,7 +114,7 @@ Verify from staging metadata and an authenticated test client:
 - All expected tables, constraints, indexes, sequences, and seed products exist.
 - Every browser-visible business table has RLS enabled and expected policies; no unintended direct write grants exist.
 - All SECURITY DEFINER functions have a fixed safe `search_path`, intended ownership, and least-privilege EXECUTE grants. `PUBLIC` and `anon` must not execute business RPCs; internal helpers must not be client-callable.
-- All 42 frontend RPC signatures and argument names match `docs/SUPABASE_RPC_INVENTORY.md`, and each intended frontend RPC is executable by `authenticated`.
+- All 42 frontend RPC signatures and argument names match `docs/SUPABASE_RPC_INVENTORY.md`; intended browser RPCs are executable by `authenticated`, with the deliberate exception that `api_claim_owner()` is revoked from `PUBLIC`, `anon`, and `authenticated` by migration 008.
 - Pending/disabled users return no protected data. Salespeople are limited to their assigned shops; admin and owner powers match the permission matrix.
 - Audit events are written for state changes and do not contain credentials or unnecessary sensitive data.
 - Stock, payment, return, invoice, and ledger invariants hold after test transactions and reversals/rollback.
@@ -125,7 +125,7 @@ Verify from staging metadata and an authenticated test client:
 Use disposable Auth accounts and clearly marked test data. Verify:
 
 1. Sign-up creates one pending profile; sign-in, sign-out, and session restore work.
-2. First-owner claim can succeed once and cannot be raced or repeated; a second account cannot self-promote.
+2. Authenticated calls to `api_claim_owner()` are denied; the designated owner is provisioned only by the trusted project operator, and a second account cannot self-promote.
 3. Pending/disabled users cannot retrieve `api_team_list`, `api_audit_log`, business settings, or other protected data.
 4. Owner creates a product price and shop; salesperson assignment boundaries are enforced.
 5. Cash/UPI sale totals, invoice snapshots, stock deduction, submitted payment, verification, allocation, receipt, and outstanding balance reconcile.
