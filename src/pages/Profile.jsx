@@ -92,7 +92,7 @@ export default function Profile() {
               type="button"
               className="profile-avatar-button"
               onClick={() => fileRef.current?.click()}
-              disabled={avatarBusy}
+              disabled={avatarBusy || app.mode !== 'local'}
               aria-label="Change profile picture"
             >
               {avatarBusy ? (
@@ -119,7 +119,11 @@ export default function Profile() {
               onChange={pickAvatar}
               hidden
             />
-            <p className="muted-copy small">Click the picture to upload a new one (max 2 MB).</p>
+            <p className="muted-copy small">
+              {app.mode === 'local'
+                ? 'Click the picture to upload a new one (max 2 MB).'
+                : 'Cloud profile-picture uploads are temporarily disabled until private storage and access policies are configured.'}
+            </p>
           </div>
 
           <form className="form-stack" onSubmit={saveName}>
