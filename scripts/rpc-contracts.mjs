@@ -150,7 +150,11 @@ export function auditRpcContracts() {
     } else if (expected.join(',') !== call.args.join(',')) {
       errors.push(`${call.name}: frontend args [${call.args.join(', ')}] do not match SQL args [${expected.join(', ')}]`)
     }
-    if (!definition.authenticatedGrant) errors.push(`${call.name}: missing exact authenticated EXECUTE grant`)
+    // Owner bootstrap is intentionally unavailable to browser roles after migration 008.
+    // Every other frontend RPC must retain its exact authenticated EXECUTE grant.
+    if (!definition.authenticatedGrant && !definition.authenticatedRevoked) {
+      errors.push(`${call.name}: missing exact authenticated EXECUTE grant or explicit authenticated revoke`)
+    }
     if (!definition.publicAnonRevoked) errors.push(`${call.name}: missing exact PUBLIC/anon EXECUTE revoke`)
   }
   for (const definition of definitions.values()) {
