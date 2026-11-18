@@ -17,7 +17,7 @@ Exactly eight migrations, applied in filename order:
 | 5 | `20261118000500_business_inventory_return_expense_rpcs.sql` | `F438A12D4E732053B0ADAF19B2BB9E64AF8DB5E974020673456BC0954CD86626` |
 | 6 | `20261118000600_business_dashboard_team_rpcs.sql` | `05022AF79B4CD7B3D517DA848C2B29294B5FDC50AAAE9FCEBDF5E7A1DC7E6051` |
 | 7 | `20261118000700_business_security_integrity_remediation.sql` | `16D30D467602C9CB909511424DC0330065F920EE6B9DA4D269BEB13F12A3ABC6` |
-| 8 | `20261118000800_controlled_owner_bootstrap.sql` | `03A0F3B4C73331532BF027260E3DDCA570FCDF327D0382777AA3E3162BE45E98` |
+| 8 | `20261118000800_controlled_owner_bootstrap.sql` | **Re-hash before release packaging** |
 
 **Excluded:** `20261117000100_phase1_foundation.sql` and
 `20261117000200_phase1_commerce_ledgers.sql` are historical drafts. Keep them
@@ -25,9 +25,7 @@ byte-for-byte; do not apply, rename, delete, or mark them applied. Because they
 sit in the CLI migration directory, **never run a generic `supabase db push`**.
 Use a reviewed release directory containing only the eight files above.
 
-> The remediation file was updated after the summary snapshot; the hash above is
-> the authoritative hash of the current file. Re-hash immediately before packing
-> the release and record the value in the deployment log.
+> The remediation and owner-bootstrap files must be re-hashed from the exact release commit immediately before packing. Do not treat an unverified hash as authoritative; record both verified values in the deployment log.
 
 ## 2. Preconditions (all must be true)
 
@@ -83,14 +81,14 @@ present if 1–6 are already applied.
 ## 3. Rehearsal sequence (disposable environment only)
 
 1. Snapshot the empty/legacy schema and record the ledger state.
-2. Apply migrations 1–6; run the documented smoke checks (catalog, first owner,
-   team list, one cash sale, one credit sale, one payment verification).
-3. Apply migration 7. It must commit atomically; any exception rolls the whole
-   file back.
+2. Apply migrations 1–6; run the documented smoke checks (catalog, team list,
+   one cash sale, one credit sale, one payment verification).
+3. Apply migration 7, then migration 8 in filename order. Each must commit
+   atomically; any exception rolls that file back.
 4. Functional checks:
    - `api_team_list()` / `api_audit_log()` return `[]` for a pending and a
      disabled profile, and data for owner/admin.
-   - `authenticated execution of `api_claim_owner()` is denied; the designated owner is provisioned only by a trusted project operator.
+   - Authenticated execution of `api_claim_owner()` is denied after migration 8; the designated owner is provisioned only by a trusted project operator.
    - Two overlapping verification sessions for two payments against one sale:
      exactly one succeeds, the other raises `Sale balance changed`; sale balance
      never negative.
@@ -119,7 +117,7 @@ from pg_trigger where tgrelid = 'auth.users'::regclass and not tgisinternal;
 3. Apply the eight files in order in a single reviewed transaction **or** via
    the CLI with the release directory; confirm each version is recorded exactly
    once.
-4. Re-run §3.5 and a representative read-only smoke set.
+4. Re-run §3 and a representative read-only smoke set.
 5. Unfreeze; monitor `api_verify_payment` lock waits, `api_team_list` errors and
    PostgREST schema cache reload.
 
