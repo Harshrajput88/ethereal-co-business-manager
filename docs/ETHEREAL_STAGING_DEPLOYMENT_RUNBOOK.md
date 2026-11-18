@@ -1,18 +1,37 @@
 # Ethereal Co. — Staging Deployment Runbook
 
-**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. The security review found release-blocking authorization, return-limit, and financial-concurrency defects. Resolve them in separately reviewed migration changes while preserving the six original migration files.
+**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. The security review found release-blocking authorization, return-limit, and financial-concurrency defects. Resolve them in separately reviewed migration changes while preserving the seven reviewed release migrations and both historical drafts.
 
 ## Target and scope
 
 - Intended isolated staging project: `zvnnnplpjkwmnaukthgp`.
 - Production application project, explicitly excluded: `jojfscpsaqfcazqzkjio`.
 - Never infer a target from a dashboard branch label. Before each future remote operation, compare the configured project ref and linked-project identity with the owner-approved staging reference. Abort on mismatch.
+
+## Controlled first-owner bootstrap
+
+- Public signup must never grant a user the ability to claim the first owner role. Migration 008 revokes authenticated execution of `api_claim_owner()`; the cloud UI does not expose self-service owner claiming.
+- Create/invite the designated owner through the trusted Supabase Auth operator workflow. Verify the email and Auth user ID out-of-band before changing the profile.
+- As the trusted project operator only (never from the browser), promote that exact Auth user:
+
+```sql
+UPDATE public.profiles AS p
+SET role = 'owner', status = 'approved',
+    approved_at = COALESCE(p.approved_at, now()),
+    approved_by = p.id, disabled_at = NULL
+FROM auth.users AS u
+WHERE p.id = u.id
+  AND lower(u.email) = lower('<DESIGNATED_OWNER_EMAIL>');
+```
+
+- Verify exactly one approved owner exists before enabling ordinary team onboarding. Never expose service-role credentials in frontend code.
+
 - No production connection or deployment is part of this runbook.
 - The prior read-only inspection found no public business relations, no public API functions, no `public.profiles`, no project `supabase_migrations.schema_migrations` ledger, zero Auth users by aggregate count, and no Storage buckets. Re-inspect under separately approved read-only authorization immediately before any future staging deployment; these facts can become stale.
 
 ## Explicit migration order
 
-The intended current business package is these six files, in timestamp order:
+The intended current business package is these seven files, in timestamp order:
 
 1. `supabase/migrations/20261118000100_business_schema.sql`
 2. `supabase/migrations/20261118000200_business_core_rpcs.sql`
@@ -20,13 +39,15 @@ The intended current business package is these six files, in timestamp order:
 4. `supabase/migrations/20261118000400_business_payment_rpcs.sql`
 5. `supabase/migrations/20261118000500_business_inventory_return_expense_rpcs.sql`
 6. `supabase/migrations/20261118000600_business_dashboard_team_rpcs.sql`
+7. `supabase/migrations/20261118000700_business_security_integrity_remediation.sql`
+8. `supabase/migrations/20261118000800_controlled_owner_bootstrap.sql`
 
 Do **not** run a generic `supabase db push` against the current migration directory. It also contains these historical drafts, which must not be included implicitly:
 
 - `supabase/migrations/20261117000100_phase1_foundation.sql`
 - `supabase/migrations/20261117000200_phase1_commerce_ledgers.sql`
 
-The drafts create overlapping schema/types/policies, have prior security-review findings, and are not approved as a deployment base. Preserve both originals. Before any deployment, the owner/operator must reconcile project history and create an explicit, reviewed release plan that selects only the six 20261118 files. Do not rename/delete the drafts merely to influence the CLI; use an isolated reviewed migration directory/worktree or another documented selection process, then verify the exact migration plan before execution.
+The drafts create overlapping schema/types/policies, have prior security-review findings, and are not approved as a deployment base. Preserve both originals. Before any deployment, the owner/operator must reconcile project history and create an explicit, reviewed release plan that selects only the seven 20261118 files. Do not rename/delete the drafts merely to influence the CLI; use an isolated reviewed migration directory/worktree or another documented selection process, then verify the exact migration plan before execution.
 
 ## Required go/no-go gates
 
@@ -34,7 +55,7 @@ Do not proceed until all are true:
 
 - The findings in `reports/ETHEREAL_SIX_MIGRATION_SECURITY_RELEASE_REVIEW.pdf` are addressed and independently reviewed. In particular, fix list-RPC NULL authorization, cumulative/concurrent return limits, payment allocation serialization and amount rounding, and bootstrap/last-owner races.
 - Re-run local SQL parsing, contract checks, and automated tests against the corrected package. Add regression tests for each fix and concurrent operations.
-- Obtain owner/security approval for the exact six-file package and migration-history strategy.
+- Obtain owner/security approval for the exact seven-file package and migration-history strategy.
 - Verify staging target ref and project identity; production ref must not match.
 - Obtain a fresh read-only object/history/Auth/Storage inventory. Reconcile all existing objects and identify whether any data must be preserved.
 - Define an owner-approved backup/restore point and confirm restoration access before writes.
@@ -50,7 +71,7 @@ Do not proceed until all are true:
 5. Reconcile compatibility for existing `profiles`, role type/enum, signup triggers, sequences, policies, and all objects created with `IF NOT EXISTS`. The DDL is not a general-purpose schema merge for arbitrary partially existing tables.
 6. Verify the Auth configuration, email confirmation behavior, signup metadata contract, redirect URLs, and availability of a controlled owner bootstrap account.
 7. Create and verify a recoverable pre-deployment backup. Record who can restore it and the expected restoration time.
-8. Run the exact proposed six-file plan in a disposable rehearsal environment; capture migration output, object/grant/RLS checks, and rollback rehearsal results.
+8. Run the exact proposed seven-file plan in a disposable rehearsal environment; capture migration output, object/grant/RLS checks, and rollback rehearsal results.
 9. Confirm no older 20261117 drafts appear in the plan and no command can target production.
 10. Obtain separate, explicit owner authorization for the staging database write. This review itself does not provide that authorization.
 
@@ -65,7 +86,7 @@ Do not proceed until all are true:
 
 1. Reconfirm the exact staging ref immediately before the write and exclude production.
 2. Use the separately approved, explicit migration selection—not a generic push while the older drafts are present.
-3. Apply migrations 1–6 above sequentially. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
+3. Apply migrations 1–7 above sequentially. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
 4. Capture migration output and resulting migration-history IDs. Verify each file is recorded exactly once.
 5. Request/reload the PostgREST schema cache using the approved Supabase mechanism only after all DDL completes.
 6. Provision `profile-picture` and narrowly scoped Storage policies in a separate reviewed step, only if explicitly approved.
@@ -89,7 +110,7 @@ Do not proceed until all are true:
 
 Verify from staging metadata and an authenticated test client:
 
-- Migration ledger contains exactly the reviewed six current IDs; neither 20261117 draft is applied.
+- Migration ledger contains exactly the reviewed seven current IDs; neither 20261117 draft is applied.
 - All expected tables, constraints, indexes, sequences, and seed products exist.
 - Every browser-visible business table has RLS enabled and expected policies; no unintended direct write grants exist.
 - All SECURITY DEFINER functions have a fixed safe `search_path`, intended ownership, and least-privilege EXECUTE grants. `PUBLIC` and `anon` must not execute business RPCs; internal helpers must not be client-callable.
