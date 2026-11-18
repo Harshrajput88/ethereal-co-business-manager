@@ -1,166 +1,81 @@
 # Ethereal Co. — Phase 2 Release & Migration Plan
 
-**Date:** 18 November 2026
-**Status:** Local remediation complete; **awaiting owner approval**. Nothing in
-this plan has been executed against staging or production.
+**Date:** 18 November 2026  
+**Status: HOLD — no staging or production deployment is authorized.**
 
-## 1. Release set
+This document is the canonical migration manifest for the current release candidate. It supersedes the older eight-migration instructions. No SQL has been applied to staging or production.
 
-Exactly eight migrations, applied in filename order:
+## 1. Exact migration package
 
-| Order | File | SHA-256 |
-|-------|------|---------|
-| 1 | `20261118000100_business_schema.sql` | `4AA1BB4A5BCB723D67DE0D2B633D5D0CDA1BB835368E105E48E418BF8F3B50FB` |
-| 2 | `20261118000200_business_core_rpcs.sql` | `2F23D236278C120F3172FA6442FB390874AC1BC144E3948001D6BB910BAE9FF5` |
-| 3 | `20261118000300_business_sales_rpcs.sql` | `A9C619F438A06423CDC9182EFCD329EC98EBE242D836D8428D23DF389F386CCA` |
-| 4 | `20261118000400_business_payment_rpcs.sql` | `89401F07102D1A08ABB80C27A8FBB4F05CD29EAE1A3DAB52578D7E1424A05144` |
-| 5 | `20261118000500_business_inventory_return_expense_rpcs.sql` | `F438A12D4E732053B0ADAF19B2BB9E64AF8DB5E974020673456BC0954CD86626` |
-| 6 | `20261118000600_business_dashboard_team_rpcs.sql` | `05022AF79B4CD7B3D517DA848C2B29294B5FDC50AAAE9FCEBDF5E7A1DC7E6051` |
-| 7 | `20261118000700_business_security_integrity_remediation.sql` | `16D30D467602C9CB909511424DC0330065F920EE6B9DA4D269BEB13F12A3ABC6` |
-| 8 | `20261118000800_controlled_owner_bootstrap.sql` | **Re-hash before release packaging** |
+Apply only these nine files, in filename order:
 
-**Excluded:** `20261117000100_phase1_foundation.sql` and
-`20261117000200_phase1_commerce_ledgers.sql` are historical drafts. Keep them
-byte-for-byte; do not apply, rename, delete, or mark them applied. Because they
-sit in the CLI migration directory, **never run a generic `supabase db push`**.
-Use a reviewed release directory containing only the eight files above.
+| Order | Migration |
+|---:|---|
+| 1 | `20261118000100_business_schema.sql` |
+| 2 | `20261118000200_business_core_rpcs.sql` |
+| 3 | `20261118000300_business_sales_rpcs.sql` |
+| 4 | `20261118000400_business_payment_rpcs.sql` |
+| 5 | `20261118000500_business_inventory_return_expense_rpcs.sql` |
+| 6 | `20261118000600_business_dashboard_team_rpcs.sql` |
+| 7 | `20261118000700_business_security_integrity_remediation.sql` |
+| 8 | `20261118000800_controlled_owner_bootstrap.sql` |
+| 9 | `20261118000900_revoke_public_rls_auto_enable.sql` |
 
-> The remediation and owner-bootstrap files must be re-hashed from the exact release commit immediately before packing. Do not treat an unverified hash as authoritative; record both verified values in the deployment log.
+The exact release hashes for all nine files must be calculated from the frozen release commit immediately before deployment and recorded in the approval record. Earlier hashes in superseded versions of this plan are not authoritative for this nine-file package.
 
-## 2. Preconditions (all must be true)
+**Excluded historical drafts:** `20261117000100_phase1_foundation.sql` and `20261117000200_phase1_commerce_ledgers.sql`. Preserve them byte-for-byte. Never run a generic `supabase db push` while these drafts remain in the migration directory. Use a reviewed explicit migration selection and verify the exact plan before execution.
 
-1. Owner approval recorded for this exact hash set.
-2. A disposable Supabase-compatible environment (or local PostgreSQL service)
-   is available for rehearsal. Do **not** rehearse on production.
-3. The target has been inspected read-only and its state matches the assumption
-   that migrations 1–6 are not yet applied (or that an equivalent schema is
-   already present with compatible definitions).
-4. Preflight checks:
+## 2. Current security and feature boundaries
 
-```sql
--- a. Excluded drafts must not be in target history
-select version from supabase_migrations.schema_migrations
-where version like '20261117%';
+- Migration 007 contains business authorization and integrity remediation.
+- Migration 008 disables public self-service owner claiming. The designated owner must be provisioned by a trusted project operator after verifying the Auth identity. No browser RPC may promote an owner.
+- Migration 009 revokes `PUBLIC`, `anon`, and `authenticated` execution on the platform-owned `public.rls_auto_enable()` function while leaving the platform event trigger attached.
+- Profile-picture upload is **not deployable yet**. The frontend expects a `profile-picture` Storage bucket, but this release does not provision it or its object policies. Do not make the bucket public as a workaround. Either provision a separately reviewed private bucket and owner-scoped policies with upload/read/replacement tests, or keep avatar upload disabled until that work is approved.
+- No production connection or deployment is part of this plan.
 
--- b. Release versions must be absent (fresh apply) or already fully applied
-select version from supabase_migrations.schema_migrations
-where version in ('20261118000100','20261118000200','20261118000300',
-                  '20261118000400','20261118000500','20261118000600',
-                  '20261118000700','20261118000800');
+## 3. Preconditions — all required
 
--- c. Pre-existing duplicate return lines (would abort the unique index)
-select return_request_id, sale_line_id, count(*)
-from public.return_lines
-group by 1, 2 having count(*) > 1;
+1. Independent security review of the exact nine migration files and their SHA-256 hashes.
+2. Owner approval for those exact hashes, repository commit, target project ref, and migration-history strategy.
+3. Fresh read-only inspection of the intended staging project, including project identity, schema, migration ledger, Auth configuration/users, Storage buckets/policies, grants, RLS, triggers, and functions.
+4. A verified pre-deployment backup and a successful restore rehearsal. Confirm whether database, Auth, and Storage state are covered; do not assume a database-only dump is a complete project recovery.
+5. Rehearsal of the exact nine-file set on a disposable Supabase-compatible environment, including real concurrent database sessions and Auth/PostgREST/RLS checks. Local PGlite tests are useful regression coverage but do not substitute for this.
+6. Full local automated tests, lint, and production build on the frozen release commit.
+7. No migration-history mismatch, no accidental inclusion of either 20261117 draft, and no ambiguity about the staging target.
+8. Separate explicit authorization before any staging database write.
 
--- d. Existing signup trigger (must be absent, or ours and AFTER INSERT FOR EACH ROW)
-select t.tgname, p.oid::regprocedure as fn, t.tgtype
-from pg_trigger t
-join pg_proc p on p.oid = t.tgfoid
-where t.tgrelid = 'auth.users'::regclass and not t.tgisinternal;
+## 4. Rehearsal and staging verification
 
--- e. Existing conflicting SKU/product pair (LOW finding)
-select pv.sku, pv.product_id, p.name
-from public.product_variants pv join public.products p on p.id = pv.product_id
-where pv.sku in ('ETC-500ML-24','ETC-1L-12');
+Use disposable Auth accounts and clearly marked test data. Verify:
 
--- f. Objects from migrations 1–6 that the remediation replaces must exist
-select proname from pg_proc
-where pronamespace = 'public'::regnamespace
-  and proname in ('api_team_list','api_audit_log','api_claim_owner',
-                  'api_verify_payment','api_record_payment','api_submit_return',
-                  'api_review_return','api_receive_stock','api_adjust_stock',
-                  'api_stock_qty','api_dashboard','api_set_employee_status',
-                  'api_set_employee_role');
-```
+- Migration ledger records exactly the nine reviewed IDs once each; neither historical draft is present.
+- Expected tables, constraints, indexes, sequences, triggers, functions, ownership, grants, and RLS policies exist.
+- Pending and disabled accounts cannot read protected business data or execute privileged RPCs.
+- Authenticated users cannot execute `api_claim_owner()`; only trusted operator provisioning can create the designated owner.
+- `PUBLIC` / `anon` / `authenticated` cannot execute `public.rls_auto_enable()`; the platform event trigger remains attached and functions normally during DDL.
+- Sales, stock deduction, credit approval, payment verification/allocation, returns, expenses, invoices, reports, and audit events reconcile.
+- Concurrent payment verification cannot over-allocate a sale; concurrent return approvals cannot exceed sold quantities; stock cannot become negative; idempotent retries do not duplicate transactions.
+- The browser connects to the intended staging project and does not silently fall back to demo data.
+- Avatar upload remains disabled unless a separately approved private Storage bucket and policies have been provisioned and tested, including cross-user denial.
 
-Expected: (a) empty, (b) empty or all eight present, (c) empty, (d) empty or one
-matching trigger, (e) empty or the expected seeded pair, (f) all 13 functions
-present if 1–6 are already applied.
+Run Supabase security, performance, and health advisors after deployment. Resolve all unexpected findings before considering production.
 
-## 3. Rehearsal sequence (disposable environment only)
+## 5. Backup, recovery, and rollback
 
-1. Snapshot the empty/legacy schema and record the ledger state.
-2. Apply migrations 1–6; run the documented smoke checks (catalog, team list,
-   one cash sale, one credit sale, one payment verification).
-3. Apply migration 7, then migration 8 in filename order. Each must commit
-   atomically; any exception rolls that file back.
-4. Functional checks:
-   - `api_team_list()` / `api_audit_log()` return `[]` for a pending and a
-     disabled profile, and data for owner/admin.
-   - Authenticated execution of `api_claim_owner()` is denied after migration 8; the designated owner is provisioned only by a trusted project operator.
-   - Two overlapping verification sessions for two payments against one sale:
-     exactly one succeeds, the other raises `Sale balance changed`; sale balance
-     never negative.
-   - Two overlapping return approvals for one sale line: exactly one succeeds.
-   - Replaying a payment/sale/stock reference with a different payload raises;
-     replaying the identical payload returns `idempotent: true`.
-   - `api_stock_qty` reports `bigint` and totals beyond 2 147 483 647.
-5. Post-apply object audit:
+- Record backup timestamp, target ref, scope, retention, restore operator, and recovery procedure.
+- Verify restoration access and rehearse recovery before writes. A public-schema-only dump is not sufficient evidence that Auth and Storage can be recovered.
+- Stop immediately on the first migration error. Preserve logs and the last completed migration ID. Do not edit migration history or rerun modified SQL in place.
+- Prefer forward corrective migrations after business data exists. Do not drop or truncate append-only audit, inventory, allocation, invoice, or ledger records as an ad hoc rollback.
+- Restore only from the approved recovery point after an impact assessment and with a consistent database/Auth/Storage recovery plan.
 
-```sql
-select oid::regprocedure, prorettype::regtype
-from pg_proc where proname = 'api_stock_qty';
+## 6. Deployment order and approval boundary
 
-select indexname from pg_indexes
-where tablename = 'return_lines' and indexname = 'return_lines_request_line_unique';
+1. Freeze the exact repository commit and calculate SHA-256 hashes for all nine SQL files.
+2. Complete independent review, full local checks, disposable rehearsal, and backup/restore rehearsal.
+3. Obtain explicit approval for the exact hashes and staging target `zvnnnplpjkwmnaukthgp`.
+4. Reconfirm project identity and fresh migration/schema/Auth/Storage inventory immediately before writing.
+5. Apply only the reviewed nine-file set to staging, in order. Stop at the first error.
+6. Verify migration history, grants, RLS, advisor findings, Auth/RPC behavior, and all business smoke tests.
+7. Production project `jojfscpsaqfcazqzkjio` remains out of scope. It requires a separate review, backup, and explicit production approval after staging passes.
 
-select tgname, tgtype, tgfoid::regprocedure
-from pg_trigger where tgrelid = 'auth.users'::regclass and not tgisinternal;
-```
-
-## 4. Production/staging apply (after separate approval)
-
-1. Freeze writes (maintenance window) for the duration; these migrations change
-   authorization and allocation behaviour.
-2. Take a logical backup and record the current ledger.
-3. Apply the eight files in order in a single reviewed transaction **or** via
-   the CLI with the release directory; confirm each version is recorded exactly
-   once.
-4. Re-run §3 and a representative read-only smoke set.
-5. Unfreeze; monitor `api_verify_payment` lock waits, `api_team_list` errors and
-   PostgREST schema cache reload.
-
-## 5. Rollback approach
-
-The remediation is **additive and function-replacing**, so application rollback
-is possible without data loss for the schema itself. It is not a full data
-rollback: rows written under the new rules remain.
-
-**Application rollback (safe, minutes):**
-
-1. Re-apply the *original* definitions from `20261118000200`–`20261118000600`
-   for every replaced function (`CREATE OR REPLACE` restores prior bodies; run
-   `DROP FUNCTION public.api_stock_qty(uuid, text);` then re-create the
-   `integer` version from `20261118000200` because the return type changed).
-2. Leave `idempotency_fingerprint` columns and the unique index in place — they
-   are additive and the original bodies ignore them. Dropping the index is only
-   safe after confirming no duplicate lines exist.
-3. Verify: `api_team_list`/`api_audit_log` revert to prior behaviour, payments
-   verify without sale locks (old risk returns). **Rolling back reintroduces the
-   HIGH findings**, so it is a break-glass option, not a normal path.
-
-**Forward fix preferred:** ship a new migration that corrects the specific
-function rather than reverting the whole remediation.
-
-**Full teardown (only for an unused/disposable environment):** drop the two
-columns and the unique index *after* re-applying the original functions; then
-remove the ledger row for `20261118000700` through the controlled procedure —
-never fabricate or delete ledger rows on a live project.
-
-## 6. Go / No-Go gate
-
-GO to staging rehearsal when:
-
-- Owner approves the hashes in §1.
-- `npm test`, `npm run lint`, `npm run build` pass on the release commit.
-- Preflight §2 is clean on the disposable target.
-
-GO to production only when:
-
-- Staging rehearsal (including real concurrent verification/return/owner races)
-  passes with no over-allocation, no over-return, and no unauthorized reads.
-- The auth signup trigger check passes on the target.
-- Backup and rollback rehearsal are complete.
-
-Until then the release remains **NO-GO for production**.
+**Current decision: NO-GO for database writes.** This plan is preparation, not authorization.
