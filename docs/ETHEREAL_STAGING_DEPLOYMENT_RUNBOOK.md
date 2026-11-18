@@ -48,7 +48,7 @@ Do **not** run a generic `supabase db push` against the current migration direct
 - `supabase/migrations/20261117000100_phase1_foundation.sql`
 - `supabase/migrations/20261117000200_phase1_commerce_ledgers.sql`
 
-The drafts create overlapping schema/types/policies, have prior security-review findings, and are not approved as a deployment base. Preserve both originals. Before any deployment, the owner/operator must reconcile project history and create an explicit, reviewed release plan that selects only the eight 20261118 files. Do not rename/delete the drafts merely to influence the CLI; use an isolated reviewed migration directory/worktree or another documented selection process, then verify the exact migration plan before execution.
+The drafts create overlapping schema/types/policies, have prior security-review findings, and are not approved as a deployment base. Preserve both originals. Before any deployment, the owner/operator must reconcile project history and create an explicit, reviewed release plan that selects the eight business migrations plus migration 009 for Supabase platform hardening. Do not rename/delete the drafts merely to influence the CLI; use an isolated reviewed migration directory/worktree or another documented selection process, then verify the exact migration plan before execution.
 
 ## Required go/no-go gates
 
@@ -72,7 +72,7 @@ Do not proceed until all are true:
 5. Reconcile compatibility for existing `profiles`, role type/enum, signup triggers, sequences, policies, and all objects created with `IF NOT EXISTS`. The DDL is not a general-purpose schema merge for arbitrary partially existing tables.
 6. Verify the Auth configuration, email confirmation behavior, signup metadata contract, redirect URLs, and availability of a controlled owner bootstrap account.
 7. Create and verify a recoverable pre-deployment backup. Record who can restore it and the expected restoration time.
-8. Run the exact proposed eight-file plan in a disposable rehearsal environment; capture migration output, object/grant/RLS checks, and rollback rehearsal results.
+8. Run the exact proposed nine-migration plan in a disposable rehearsal environment; capture migration output, object/grant/RLS checks, and rollback rehearsal results.
 9. Confirm no older 20261117 drafts appear in the plan and no command can target production.
 10. Obtain separate, explicit owner authorization for the staging database write. This review itself does not provide that authorization.
 
@@ -87,7 +87,7 @@ Do not proceed until all are true:
 
 1. Reconfirm the exact staging ref immediately before the write and exclude production.
 2. Use the separately approved, explicit migration selection—not a generic push while the older drafts are present.
-3. Apply migrations 1–9 above sequentially, including the separate platform event-trigger privilege hardening migration. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
+3. Apply the eight business migrations in order, then migration 009 for platform event-trigger privilege hardening. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
 4. Capture migration output and resulting migration-history IDs. Verify each file is recorded exactly once.
 5. Request/reload the PostgREST schema cache using the approved Supabase mechanism only after all DDL completes.
 6. Provision `profile-picture` and narrowly scoped Storage policies in a separate reviewed step, only if explicitly approved.
