@@ -622,6 +622,14 @@ async function scenarioReleaseTailMigrations() {
   expect(checks, 'anon cannot execute api_claim_owner after migration 008',
     ownerPrivileges[0].anon_can_execute === false, JSON.stringify(ownerPrivileges[0]))
 
+  const ownerPublicGrant = await rows(`SELECT EXISTS (
+    SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+    WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+  ) AS public_can_execute
+  FROM pg_proc p WHERE p.oid = 'public.api_claim_owner()'::regprocedure`)
+  expect(checks, 'PUBLIC cannot execute api_claim_owner after migration 008',
+    ownerPublicGrant[0].public_can_execute === false, JSON.stringify(ownerPublicGrant[0]))
+
   const blockedClaim = await runSession('authenticated', PENDING, 'SELECT public.api_claim_owner();')
   expect(checks, 'pending user owner claim is denied by PostgreSQL privileges',
     blockedClaim.code !== 0 && /permission denied/i.test(blockedClaim.err), lastLine(blockedClaim.err))
@@ -638,6 +646,14 @@ async function scenarioReleaseTailMigrations() {
     rlsPrivileges[0].anon_can_execute === false, JSON.stringify(rlsPrivileges[0]))
   expect(checks, 'authenticated cannot execute rls_auto_enable after migration 009',
     rlsPrivileges[0].authenticated_can_execute === false, JSON.stringify(rlsPrivileges[0]))
+
+  const rlsPublicGrant = await rows(`SELECT EXISTS (
+    SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+    WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+  ) AS public_can_execute
+  FROM pg_proc p WHERE p.oid = 'public.rls_auto_enable()'::regprocedure`)
+  expect(checks, 'PUBLIC cannot execute rls_auto_enable after migration 009',
+    rlsPublicGrant[0].public_can_execute === false, JSON.stringify(rlsPublicGrant[0]))
   expect(checks, 'trusted postgres operator retains rls_auto_enable execution',
     rlsPrivileges[0].operator_can_execute === true, JSON.stringify(rlsPrivileges[0]))
 
@@ -679,6 +695,7 @@ async function finalAudit() {
   expect(checks, 'one approved owner', row.approved_owners === 1, String(row.approved_owners))
   expect(checks, 'no negative sale balances', row.negative_balances === 0, String(row.negative_balances))
   expect(checks, 'no sale is over-allocated by verified payments', row.over_allocated_sales === 0, String(row.over_allocated_sales))
+  expect(checks, 'no submitted payment allocations exceed sale totals', row.pending_allocation_overage === 0, String(row.pending_allocation_overage))
   expect(checks, 'no negative stock', row.negative_stock_variants === 0, String(row.negative_stock_variants))
   expect(checks, 'no duplicate sale references', row.duplicate_sale_refs === 0, String(row.duplicate_sale_refs))
   expect(checks, 'no duplicate payment references', row.duplicate_payment_refs === 0, String(row.duplicate_payment_refs))
