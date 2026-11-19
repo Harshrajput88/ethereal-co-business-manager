@@ -189,7 +189,7 @@ async function resetDatabase() {
 }
 
 async function applyMigrations() {
-  const bootstrap = join(process.env.LOCALAPPDATA || '', 'Temp', 'opencode', 'phase3', '00_bootstrap.sql')
+  const bootstrap = process.env.PHASE3_BOOTSTRAP_SQL || join(ROOT, 'scripts', 'phase3-bootstrap.sql')
   if (!existsSync(bootstrap)) throw new Error(`bootstrap SQL missing at ${bootstrap}`)
   const boot = await psqlText(readFileSync(bootstrap, 'utf8'))
   if (boot.code !== 0) throw new Error(`bootstrap failed: ${boot.err}`)
