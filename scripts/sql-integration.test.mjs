@@ -410,6 +410,20 @@ test('idempotency and role management', async () => {
   assert.equal(first.sale_id, second.sale_id)
   assert.equal(second.idempotent, true)
 
+  await expectFailure(
+    () => asUser(ids.sales2,
+      'SELECT public.api_create_sale($1, $2, $3::jsonb, $4)',
+      [shopB, 'cash', JSON.stringify([{ variant_id: variant1L, cartons: 1 }]), ref]),
+    /Not authorized/
+  )
+
+  const rightfulRetry = row(await asUser(ids.sales1,
+    'SELECT public.api_create_sale($1, $2, $3::jsonb, $4) AS r',
+    [shopA, 'cash', JSON.stringify([{ variant_id: variant1L, cartons: 1 }]), ref]
+  )).r
+  assert.equal(rightfulRetry.sale_id, first.sale_id)
+  assert.equal(rightfulRetry.idempotent, true)
+
   await asUser(ids.owner, 'SELECT public.api_set_employee_role($1, $2)', [ids.sales2, 'admin'])
   const promoted = row(await db.query('SELECT role FROM public.profiles WHERE id = $1', [ids.sales2]))
   assert.equal(promoted.role, 'admin')
@@ -420,6 +434,30 @@ test('idempotency and role management', async () => {
     () => asUser(ids.owner, 'SELECT public.api_set_employee_role($1, $2)', [ids.owner, 'salesperson']),
     /last owner/
   )
+})
+
+test('payment idempotency references cannot be replayed by another salesperson', async () => {
+  const ref = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+  const first = row(await asUser(ids.sales1,
+    'SELECT public.api_record_payment($1, $2, $3, now(), NULL, $4::jsonb, $5) AS r',
+    [shopA, 'upi', 25, '[]', ref]
+  )).r
+  assert.equal(first.status, 'submitted')
+
+  await expectFailure(
+    () => asUser(ids.sales2,
+      'SELECT public.api_record_payment($1, $2, $3, now(), NULL, $4::jsonb, $5)',
+      [shopB, 'upi', 25, '[]', ref]
+    ),
+    /Not authorized/
+  )
+
+  const rightfulRetry = row(await asUser(ids.sales1,
+    'SELECT public.api_record_payment($1, $2, $3, now(), NULL, $4::jsonb, $5) AS r',
+    [shopA, 'upi', 25, '[]', ref]
+  )).r
+  assert.equal(rightfulRetry.payment_id, first.payment_id)
+  assert.equal(rightfulRetry.idempotent, true)
 })
 
 test('dashboard and reports reflect verified money only', async () => {
