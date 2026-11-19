@@ -415,7 +415,7 @@ are out of scope here and were not "fixed" opportunistically.
 
 ## 10. Current nine-migration rehearsal — 19 November 2026
 
-**<span>PASS</span> — PostgreSQL 17.12, GitHub Actions run #49**
+**PASS — PostgreSQL 17.12, GitHub Actions run #49**
 
 The real-concurrency harness now runs automatically in CI against an isolated PostgreSQL 17.12 service container. The CI job creates only the dedicated `ethereal_phase3_test` database, applies the exact nine canonical migrations, executes separate `psql` processes for concurrent sessions, and uploads the generated JSON/log evidence as the `ethereal-postgresql-17-rehearsal` workflow artifact.
 
