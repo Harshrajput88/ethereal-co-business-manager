@@ -60,6 +60,46 @@ CI run #49 (commit `30b475b7d3002a01ef1737978317371244814e19`) passed 48 automat
 - Profile-picture upload is **not deployable yet**. The frontend expects a `profile-picture` Storage bucket, but this release does not provision it or its object policies. Do not make the bucket public as a workaround. Either provision a separately reviewed private bucket and owner-scoped policies with upload/read/replacement tests, or keep avatar upload disabled until that work is approved.
 - No production connection or deployment is part of this plan.
 
+## 2A. Trusted first-owner provisioning (operator-only)
+
+After migrations 001–009 are applied to the approved staging project and the intended owner has completed Auth signup, a trusted operator must verify the person's identity in Supabase Auth and provision the matching profile. Replace the placeholder email with the verified Auth email; do not run this through the browser client or expose a service-role key.
+
+```sql
+BEGIN;
+
+DO $provision_owner$
+DECLARE
+  v_owner_id uuid;
+BEGIN
+  SELECT id
+  INTO v_owner_id
+  FROM auth.users
+  WHERE lower(email) = lower('REPLACE_WITH_VERIFIED_OWNER_EMAIL');
+
+  IF v_owner_id IS NULL THEN
+    RAISE EXCEPTION 'Verified owner Auth user not found';
+  END IF;
+
+  UPDATE public.profiles
+  SET role = 'owner',
+      status = 'approved',
+      approved_at = COALESCE(approved_at, now()),
+      approved_by = v_owner_id,
+      disabled_at = NULL,
+      updated_at = now()
+  WHERE id = v_owner_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Owner profile not found; do not create an unrelated profile';
+  END IF;
+END
+$provision_owner$;
+
+COMMIT;
+```
+
+Immediately verify that exactly one intended profile has `role = 'owner'` and `status = 'approved'`, and confirm browser execution of `api_claim_owner()` remains revoked. This procedure is a runbook only; it has not been executed.
+
 ## 3. Preconditions — all required
 
 1. Independent security review of the exact nine migration files and their SHA-256 hashes.
