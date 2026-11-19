@@ -28,6 +28,8 @@ jobs:
         run: npm ci
       - name: Run automated tests
         run: npm test
+      - name: Syntax-check isolated PostgreSQL rehearsal harness
+        run: node --check scripts/pg-concurrency-rehearsal.mjs
       - name: Print exact release migration SHA-256 manifest
         run: node scripts/release-migration-manifest.mjs
       - name: Verify frozen migration allowlist and hashes
