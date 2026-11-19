@@ -92,7 +92,7 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Owner profile not found; do not create an unrelated profile';
   END IF;
-END
+END;
 $provision_owner$;
 
 COMMIT;
