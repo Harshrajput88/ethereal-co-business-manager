@@ -226,6 +226,11 @@ BEGIN
   IF p_client_reference IS NOT NULL THEN
     SELECT * INTO v_existing FROM public.sales WHERE client_reference = p_client_reference;
     IF FOUND THEN
+      IF v_role NOT IN ('owner', 'admin')
+         AND (v_existing.salesperson_id <> v_uid
+              OR NOT public.api_is_assigned(v_existing.shop_id)) THEN
+        RAISE EXCEPTION 'Not authorized' USING ERRCODE = '42501';
+      END IF;
       RETURN jsonb_build_object(
         'sale_id', v_existing.id,
         'sale_number', v_existing.sale_number,
