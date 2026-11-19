@@ -50,7 +50,14 @@ WHERE n.nspname = 'public'
 ORDER BY p.proname, p.oid::regprocedure::text;
 
 \echo '=== Controlled owner bootstrap privilege ==='
-SELECT has_function_privilege('PUBLIC', 'public.api_claim_owner()', 'EXECUTE') AS public_can_execute,
+SELECT EXISTS (
+         SELECT 1
+         FROM pg_proc p,
+              LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+         WHERE p.oid = 'public.api_claim_owner()'::regprocedure
+           AND a.grantee = 0
+           AND a.privilege_type = 'EXECUTE'
+       ) AS public_can_execute,
        has_function_privilege('anon', 'public.api_claim_owner()', 'EXECUTE') AS anon_can_execute,
        has_function_privilege('authenticated', 'public.api_claim_owner()', 'EXECUTE') AS authenticated_can_execute,
        has_function_privilege('postgres', 'public.api_claim_owner()', 'EXECUTE') AS postgres_can_execute;
