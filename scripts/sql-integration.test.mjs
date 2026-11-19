@@ -77,6 +77,13 @@ before(async () => {
     AS $$ SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     CREATE ROLE anon NOLOGIN;
     CREATE ROLE authenticated NOLOGIN;
+    -- Simulate a legacy app profile table with an unsafe permissive policy.
+    CREATE TABLE public.profiles (
+      id uuid PRIMARY KEY REFERENCES auth.users(id)
+    );
+    ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+    CREATE POLICY legacy_profiles_read_all ON public.profiles
+      FOR SELECT TO authenticated USING (true);
   `)
 
   for (const file of migrationFiles) {
@@ -105,6 +112,16 @@ before(async () => {
 
 after(async () => {
   if (db) await db.close()
+})
+
+test('profiles migration removes legacy broad policies and scopes reads', async () => {
+  const policies = await db.query(
+    `SELECT polname FROM pg_policy WHERE polrelid = 'public.profiles'::regclass`
+  )
+  assert.deepEqual(policies.rows.map(item => item.polname), ['bo_profiles_read'])
+
+  const own = await asUser(ids.sales1, 'SELECT id FROM public.profiles ORDER BY id')
+  assert.deepEqual(own.rows.map(item => item.id), [ids.sales1])
 })
 
 test('first owner can be claimed only once', async () => {
