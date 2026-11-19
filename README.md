@@ -86,7 +86,7 @@ The dev server prints a local URL (normally <http://localhost:5173>).
 | `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon (or publishable) key, safe for browser use *only if RLS is enabled* |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | No | Alternative name accepted by the client if the anon key is absent |
 
-`src/lib/supabase.js` throws at startup when the URL or key is missing.
+`src/lib/supabase.js` creates the cloud client only when both public values exist. If they are absent, cloud mode is unavailable; the app does not substitute demo data unless `?demo=1` is explicitly requested.
 
 ## Development commands
 
@@ -111,8 +111,8 @@ The dev server prints a local URL (normally <http://localhost:5173>).
 | Returns and expenses | **Implemented** | Submit/review/settle workflows and corresponding stock/ledger effects |
 | Dashboard and reports | **Implemented** | Business metrics plus date, shop, salesperson and product reports/exports |
 | Responsive PWA | **Implemented; browser checked** | Web manifest, offline app shell, icons, service worker; 390px check had no horizontal overflow |
-| Database | **Implemented in additive migrations; remote not deployed** | PGlite ran the six new migrations and SQL workflow tests; old Phase 1 drafts remain unexecuted |
-| Cloud readiness | **Not verified** | No production/staging connection was used; deploy only after isolated project compatibility/security review |
+| Database | **Implemented in nine ordered additive migrations; remote not deployed** | CI applies the nine-file release package to disposable PostgreSQL/PGlite test databases; the historical 20261117 drafts are excluded |
+| Cloud readiness | **Release HOLD** | Staging is healthy but has no migrations or public business tables; two security warnings remain for `public.rls_auto_enable()`. Auth/JWT/PostgREST/RLS, the actual Supabase event trigger after ACL revocation, backup/restore and business acceptance still require staging validation. Production remains untouched |
 
 ## GitHub repository
 
@@ -138,9 +138,9 @@ A full technical audit is generated at `reports/ETHEREAL_PROJECT_AUDIT.pdf`.
   It is committed for history but is not imported anywhere.
 - `npm run lint` completes with React hooks/compiler warnings; it reports no errors.
 - `npm run build` completes; Vite reports the main JS chunk is above 500 kB.
-- Supabase connectivity, deployment compatibility, live auth/RLS, legal invoice
-  format/GST, and real-device installation remain unverified. The local demo is
-  browser localStorage data and is not a production backend.
+- CI currently passes 53 automated tests and a PostgreSQL 17.12 real-concurrency rehearsal (73/73 checks), plus migration preflight, lint and production build. These disposable-database checks do not prove live Supabase Auth/JWT/PostgREST/RLS or restore readiness.
+- The local demo is browser localStorage data and is not a production backend. Cloud release remains blocked pending staging-specific validation, verified backup/restore, independent review and end-to-end business acceptance.
+- Public browser owner claiming is disabled; the designated owner must be provisioned by a trusted project operator. Cloud profile-picture uploads remain disabled until private Storage policies are reviewed and tested.
 - The exact current test results and security review are recorded in
   `reports/implementation-report.pdf` when generated.
 - An unrelated, empty public repository (`Harshrajput88/Etheral-Business-Manager`)
