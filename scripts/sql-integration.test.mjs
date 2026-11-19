@@ -124,6 +124,13 @@ test('profiles migration removes legacy broad policies and scopes reads', async 
   assert.deepEqual(own.rows.map(item => item.id), [ids.sales1])
 })
 
+test('pending users cannot read team directory or audit history', async () => {
+  const team = row(await asUser(ids.sales3, 'SELECT public.api_team_list() AS r')).r
+  const audit = row(await asUser(ids.sales3, 'SELECT public.api_audit_log() AS r')).r
+  assert.deepEqual(team, [])
+  assert.deepEqual(audit, [])
+})
+
 test('first owner can be claimed only once', async () => {
   const claimed = row(await asUser(ids.owner, 'SELECT public.api_claim_owner() AS r'))
   assert.equal(claimed.r.role, 'owner')
