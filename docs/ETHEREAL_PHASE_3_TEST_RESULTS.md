@@ -445,3 +445,44 @@ happened yet. Nothing in this rehearsal argues against the migrations themselves
 **Explicitly not done:** no remote database was contacted, no migration was pushed, no
 commit or push was made, and nothing in `supabase/migrations/` or existing reports was
 modified. Work stops here pending owner approval.
+
+
+---
+
+## 11. Release-tail rehearsal update — 19 November 2026
+
+The earlier evidence above is specifically for migrations **001–007**. It must not be
+misrepresented as a rehearsal of the current nine-file release candidate.
+
+The PostgreSQL 17 harness has now been extended in
+`scripts/pg-concurrency-rehearsal.mjs` to apply migrations 008 and 009 **after** the
+existing business concurrency scenarios, then assert:
+
+- `authenticated` and `anon` cannot execute `api_claim_owner()` after migration 008.
+- A pending authenticated user receives a PostgreSQL permission-denied result when
+  attempting the owner-claim RPC, and their profile remains `salesperson/pending`.
+- `anon` and `authenticated` cannot execute `public.rls_auto_enable()` after
+  migration 009.
+- The trusted `postgres` role retains execute permission on the event-trigger
+  function.
+- Both tail migration files are included in the generated evidence hashes and
+  migration list.
+
+For the isolated local rehearsal only, the harness creates a minimal stand-in
+`public.rls_auto_enable()` event-trigger function and grants it to PUBLIC before
+applying migration 009. This tests the ACL change, not Supabase's actual platform
+event-trigger installation or its runtime behavior.
+
+**Execution status: NOT YET RUN.** The historical 62/62 result remains valid only
+for the earlier seven-migration run. No 009/008 real-PostgreSQL result is claimed
+until the updated harness has been executed successfully on the isolated
+PostgreSQL 17 cluster.
+
+The standard CI workflow does not run this harness because it intentionally drops
+and recreates the dedicated local database `ethereal_phase3_test`. CI's green
+result is not a substitute for this rehearsal.
+
+**Current decision remains HOLD / NO-GO for staging writes.** The nine-file set
+still needs the updated real-PostgreSQL rehearsal, independent security review,
+Supabase Auth/PostgREST/RLS verification, and backup/restore rehearsal. No remote
+database was changed by this update.
