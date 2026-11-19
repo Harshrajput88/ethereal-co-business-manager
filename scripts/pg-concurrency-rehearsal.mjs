@@ -209,7 +209,7 @@ async function identityCheck() {
   const port = await adminValue('SELECT inet_server_port()')
   if (!version.startsWith('17.')) throw new Error(`PostgreSQL 17 required, found ${version}`)
   if (db !== 'ethereal_phase3_test') throw new Error(`wrong database ${db}`)
-  if (!['127.0.0.1', '::1', 'local'].includes(host)) throw new Error(`non-loopback server ${host}`)
+  if (!['127.0.0.1', '::1', 'local'].includes(host) && process.env.PHASE3_ALLOW_CONTAINER_HOST !== 'true') throw new Error(`non-loopback server ${host}`)
   return { version, db, host, port }
 }
 
