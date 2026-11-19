@@ -41,6 +41,11 @@ const MIGRATIONS = [
   '20261118000700_business_security_integrity_remediation.sql'
 ]
 
+const TAIL_MIGRATIONS = [
+  '20261118000800_controlled_owner_bootstrap.sql',
+  '20261118000900_revoke_public_rls_auto_enable.sql'
+]
+
 const logLines = []
 const results = []
 const database = { host: HOST, port: PORT, name: DB, migrations: [], hashes: {} }
@@ -584,6 +589,62 @@ async function scenarioLockRelease() {
   return { name: '7. Rollback releases advisory lock', checks, evidence: { a: runA.durationMs, b: runB.durationMs, snapshot } }
 }
 
+async function scenarioReleaseTailMigrations() {
+  scenarioLogger('9. Release-tail security migrations 008 and 009')
+  const checks = []
+
+  // Rehearse the Supabase-owned event-trigger function ACL locally. The real
+  // platform function is not present in a vanilla PostgreSQL cluster.
+  await admin(`
+    CREATE OR REPLACE FUNCTION public.rls_auto_enable()
+    RETURNS event_trigger
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    SET search_path = ''
+    AS $function$ BEGIN NULL; END; $function$;
+    GRANT EXECUTE ON FUNCTION public.rls_auto_enable() TO PUBLIC;
+  `)
+
+  for (const file of TAIL_MIGRATIONS) {
+    const sql = readFileSync(join(ROOT, 'supabase', 'migrations', file), 'utf8')
+    database.hashes[file] = createHash('sha256').update(sql).digest('hex').toUpperCase()
+    const run = await psqlText(sql)
+    if (run.code !== 0) throw new Error(`tail migration ${file} failed: ${run.err}`)
+    database.migrations.push(file)
+    log(`applied ${file}`)
+  }
+
+  const ownerPrivileges = await rows(`SELECT
+    has_function_privilege('authenticated', 'public.api_claim_owner()', 'EXECUTE') AS authenticated_can_execute,
+    has_function_privilege('anon', 'public.api_claim_owner()', 'EXECUTE') AS anon_can_execute`)
+  expect(checks, 'authenticated cannot execute api_claim_owner after migration 008',
+    ownerPrivileges[0].authenticated_can_execute === false, JSON.stringify(ownerPrivileges[0]))
+  expect(checks, 'anon cannot execute api_claim_owner after migration 008',
+    ownerPrivileges[0].anon_can_execute === false, JSON.stringify(ownerPrivileges[0]))
+
+  const blockedClaim = await runSession('authenticated', PENDING, 'SELECT public.api_claim_owner();')
+  expect(checks, 'pending user owner claim is denied by PostgreSQL privileges',
+    blockedClaim.code !== 0 && /permission denied/i.test(blockedClaim.err), lastLine(blockedClaim.err))
+  const pendingProfile = await rows(`SELECT role, status FROM public.profiles WHERE id = '${PENDING}'`)
+  expect(checks, 'denied owner claim leaves pending profile unchanged',
+    pendingProfile.length === 1 && pendingProfile[0].role === 'salesperson' && pendingProfile[0].status === 'pending',
+    JSON.stringify(pendingProfile))
+
+  const rlsPrivileges = await rows(`SELECT
+    has_function_privilege('anon', 'public.rls_auto_enable()', 'EXECUTE') AS anon_can_execute,
+    has_function_privilege('authenticated', 'public.rls_auto_enable()', 'EXECUTE') AS authenticated_can_execute,
+    has_function_privilege('postgres', 'public.rls_auto_enable()', 'EXECUTE') AS operator_can_execute`)
+  expect(checks, 'anon cannot execute rls_auto_enable after migration 009',
+    rlsPrivileges[0].anon_can_execute === false, JSON.stringify(rlsPrivileges[0]))
+  expect(checks, 'authenticated cannot execute rls_auto_enable after migration 009',
+    rlsPrivileges[0].authenticated_can_execute === false, JSON.stringify(rlsPrivileges[0]))
+  expect(checks, 'trusted postgres operator retains rls_auto_enable execution',
+    rlsPrivileges[0].operator_can_execute === true, JSON.stringify(rlsPrivileges[0]))
+
+  return { name: '9. Release-tail security migrations 008 and 009', checks,
+    evidence: { ownerPrivileges: ownerPrivileges[0], rlsPrivileges: rlsPrivileges[0], blockedClaimError: lastLine(blockedClaim.err) } }
+}
+
 async function finalAudit() {
   scenarioLogger('8. Final committed-state integrity audit')
   const checks = []
@@ -667,6 +728,7 @@ async function main() {
   results.push(await scenarioDuplicateSale())
   results.push(await scenarioDuplicatePayment())
   results.push(await scenarioLockRelease())
+  results.push(await scenarioReleaseTailMigrations())
   results.push(await finalAudit())
 
   const allChecks = results.flatMap(r => r.checks)
