@@ -657,6 +657,24 @@ REVOKE ALL ON SEQUENCE public.invoice_number_seq FROM PUBLIC, anon, authenticate
 REVOKE ALL ON SEQUENCE public.receipt_number_seq FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON SEQUENCE public.audit_events_id_seq FROM PUBLIC, anon, authenticated;
 
+-- profiles may pre-exist from an earlier app version. PostgreSQL combines
+-- permissive policies with OR, so retaining a legacy broad policy would defeat
+-- the narrow policy below. Reset this table's policy set before defining the
+-- supported access model. Table grants were already reset in the RLS loop.
+DO $profile_policy_reset$
+DECLARE
+  v_policy record;
+BEGIN
+  FOR v_policy IN
+    SELECT polname
+    FROM pg_policy
+    WHERE polrelid = 'public.profiles'::regclass
+  LOOP
+    EXECUTE format('DROP POLICY %I ON public.profiles', v_policy.polname);
+  END LOOP;
+END
+$profile_policy_reset$;
+
 -- Read policies
 CREATE POLICY bo_profiles_read ON public.profiles FOR SELECT TO authenticated
 USING (id = (SELECT auth.uid()) OR public.api_is_admin());
