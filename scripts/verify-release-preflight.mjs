@@ -3,7 +3,8 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import assert from 'node:assert/strict'
 
-const root = join(process.cwd(), 'supabase', 'migrations')
+const migrationDir = join(process.cwd(), 'supabase', 'migrations')
+const archiveDir = join(process.cwd(), 'supabase', 'review', 'phase1')
 const approved = new Map([
   ['20261118000100_business_schema.sql', '4aa1bb4a5bcb723d67de0d2b633d5d0cda1bb835368e105e48e418bf8f3b50fb'],
   ['20261118000200_business_core_rpcs.sql', '2f23d236278c120f3172fa6442fb390874ac1bc144e3948001d6bb910bae9ff5'],
@@ -19,19 +20,21 @@ const historical = [
   '20261117000100_phase1_foundation.sql',
   '20261117000200_phase1_commerce_ledgers.sql'
 ]
-const files = readdirSync(root).filter(name => name.endsWith('.sql'))
+const files = readdirSync(migrationDir).filter(name => name.endsWith('.sql'))
+const archivedDrafts = readdirSync(archiveDir).filter(name => name.endsWith('.sql'))
 assert.equal(approved.size, 9)
 assert.deepEqual([...approved.keys()], [...approved.keys()].sort(), 'Release migrations must be ordered')
 for (const name of historical) {
-  assert.ok(files.includes(name), `Historical draft must be preserved: ${name}`)
-  assert.ok(!approved.has(name), `Historical draft must never be in release: ${name}`)
+  assert.ok(archivedDrafts.includes(name), `Historical draft must remain archived: ${name}`)
+  assert.ok(!files.includes(name), `Historical draft must never be in the active migration directory: ${name}`)
 }
 for (const [name, expected] of approved) {
   assert.ok(files.includes(name), `Missing release migration: ${name}`)
-  const actual = createHash('sha256').update(readFileSync(join(root, name))).digest('hex')
+  const actual = createHash('sha256').update(readFileSync(join(migrationDir, name))).digest('hex')
   assert.equal(actual, expected, `Release SQL changed: ${name}; stop and re-review before staging`)
 }
 const unreviewed = files.filter(name => !approved.has(name) && !historical.includes(name))
 assert.deepEqual(unreviewed, [], 'Unreviewed SQL migration found: do not deploy without review')
-console.log('PASS: exact nine-file release SHA-256 manifest; historical drafts excluded; no unreviewed SQL')
+assert.deepEqual(files.sort(), [...approved.keys()].sort(), 'Active migration directory must contain exactly the nine approved files')
+console.log('PASS: exact nine-file release SHA-256 manifest; historical drafts archived outside migrations; no unreviewed SQL')
 console.log('This preflight is NOT staging-write authorization or a substitute for concurrency, security, or restore rehearsals.')
