@@ -413,76 +413,42 @@ are out of scope here and were not "fixed" opportunistically.
 
 ---
 
-## 10. GO / NO-GO
+## 10. Current nine-migration rehearsal — 19 November 2026
 
-**GO (with conditions) for the next step: owner-approved migration of staging.**
+**<span>PASS</span> — PostgreSQL 17.12, GitHub Actions run #49**
 
-Basis:
+The real-concurrency harness now runs automatically in CI against an isolated PostgreSQL 17.12 service container. The CI job creates only the dedicated `ethereal_phase3_test` database, applies the exact nine canonical migrations, executes separate `psql` processes for concurrent sessions, and uploads the generated JSON/log evidence as the `ethereal-postgresql-17-rehearsal` workflow artifact.
 
-- All six required race categories were executed with genuinely overlapping
-  transactions on separate backends, with live lock-wait evidence.
-- Final committed state is consistent across every scenario and passes a whole-
-  database audit.
-- Rollback releases locks; duplicate requests cannot create duplicate rows; stock can
-  never go negative; money can never be allocated twice; the last owner cannot be
-  removed and a second owner cannot be claimed.
-- The exercised SQL is byte-identical to the reviewed Phase 2 release set.
-- Existing automated suites, lint and the production build all pass.
+- Commit: `30b475b7d3002a01ef1737978317371244814e19`
+- Workflow run: [#49 — full PostgreSQL 17 rehearsal](https://github.com/Harshrajput88/ethereal-co-business-manager/actions/runs/44487373348)
+- Database: PostgreSQL 17.12, disposable CI service; database name `ethereal_phase3_test`
+- Result: **72/72 checks passed, 0 failed**
+- Automated application tests: 48 passed
+- Migration manifest and release preflight: passed
+- Lint and production build: passed
 
-Conditions before staging (all require explicit owner approval):
+### Nine-migration coverage
 
-1. Apply the seven migrations to **staging** only, using the preflight/ordering/rollback
-   procedure in `docs/ETHEREAL_PHASE_2_RELEASE_MIGRATION_PLAN.md`.
-2. Re-run an equivalent smoke sequence through the real Supabase API (not `psql`) so
-   PostgREST, JWT claims and the pooler are covered.
-3. Confirm the payments UI surfaces pending payments that lost a verification race,
-   and that double-submits map `23505` to a retry message.
-4. Only after staging passes, schedule production.
+The rehearsal applies migrations 001–007 before the business concurrency scenarios, then applies migrations 008 and 009 and verifies their permission effects:
 
-**NO-GO for production today**, for the single reason that no staging validation has
-happened yet. Nothing in this rehearsal argues against the migrations themselves.
+- Concurrent first-owner claims and last-owner demotion.
+- Concurrent payment verification against a shared sale balance.
+- Concurrent return approvals against one sale line.
+- Concurrent stock receipt and sale, and concurrent oversell attempts.
+- Concurrent duplicate sale/payment idempotency references.
+- Lock release after deliberate transaction rollback.
+- Migration 008 denies `PUBLIC`, `anon`, and `authenticated` execution of `api_claim_owner()`; a pending user cannot call it and remains `salesperson/pending`.
+- Migration 009 denies `PUBLIC`, `anon`, and `authenticated` execution of `public.rls_auto_enable()`; the trusted `postgres` owner retains execution.
+- Final integrity audit checks balances, allocations, stock, duplicates, returns, advisory locks and idle transactions.
 
-**Explicitly not done:** no remote database was contacted, no migration was pushed, no
-commit or push was made, and nothing in `supabase/migrations/` or existing reports was
-modified. Work stops here pending owner approval.
+The harness creates a minimal local stand-in for Supabase's platform-owned `public.rls_auto_enable()` event-trigger function. This validates the ACL revocation logic on PostgreSQL; it does **not** prove the real Supabase platform trigger remains operational after deployment.
 
+### CI portability and safety
 
----
+The rehearsal bootstrap is now tracked at `scripts/phase3-bootstrap.sql`. The workflow uses a PostgreSQL 17 service container and a dedicated database. The script refuses a database other than `ethereal_phase3_test` and requires a loopback client connection. A narrowly scoped `PHASE3_ALLOW_CONTAINER_HOST=true` flag is used only by the CI job because the server reports its internal container-network address.
 
-## 11. Release-tail rehearsal update — 19 November 2026
+### Current decision
 
-The earlier evidence above is specifically for migrations **001–007**. It must not be
-misrepresented as a rehearsal of the current nine-file release candidate.
+**The PostgreSQL concurrency gate is now passed for the nine-file package.** This supersedes the older 62/62 result, which covered only migrations 001–007.
 
-The PostgreSQL 17 harness has now been extended in
-`scripts/pg-concurrency-rehearsal.mjs` to apply migrations 008 and 009 **after** the
-existing business concurrency scenarios, then assert:
-
-- `authenticated` and `anon` cannot execute `api_claim_owner()` after migration 008.
-- A pending authenticated user receives a PostgreSQL permission-denied result when
-  attempting the owner-claim RPC, and their profile remains `salesperson/pending`.
-- `anon` and `authenticated` cannot execute `public.rls_auto_enable()` after
-  migration 009.
-- The trusted `postgres` role retains execute permission on the event-trigger
-  function.
-- Both tail migration files are included in the generated evidence hashes and
-  migration list.
-
-For the isolated local rehearsal only, the harness creates a minimal stand-in
-`public.rls_auto_enable()` event-trigger function and grants it to PUBLIC before
-applying migration 009. This tests the ACL change, not Supabase's actual platform
-event-trigger installation or its runtime behavior.
-
-**Execution status: NOT YET RUN.** The historical 62/62 result remains valid only
-for the earlier seven-migration run. No 009/008 real-PostgreSQL result is claimed
-until the updated harness has been executed successfully on the isolated
-PostgreSQL 17 cluster.
-
-The standard CI workflow does not run this harness because it intentionally drops
-and recreates the dedicated local database `ethereal_phase3_test`. CI's green
-result is not a substitute for this rehearsal.
-
-**Current decision remains HOLD / NO-GO for staging writes.** The nine-file set
-still needs the updated real-PostgreSQL rehearsal, independent security review,
-Supabase Auth/PostgREST/RLS verification, and backup/restore rehearsal. No remote
-database was changed by this update.
+**Staging and production are still NO-GO.** Remaining gates are independent security review of the exact nine migration hashes, actual Supabase Auth/JWT/PostgREST/RLS verification, and a verified backup/restore rehearsal. The local stand-in cannot replace those platform checks. No remote database was contacted or modified by this CI run.
