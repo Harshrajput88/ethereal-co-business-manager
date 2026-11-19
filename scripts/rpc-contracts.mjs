@@ -141,7 +141,7 @@ export function auditRpcContracts() {
   for (const call of calls) {
     const definition = definitions.get(call.name)
     if (!definition) {
-      errors.push(`${call.name}: frontend call has no definition in the six 20261118 migrations`)
+      errors.push(`${call.name}: frontend call has no definition in the nine-file 20261118 release set`)
       continue
     }
     const expected = definition.signature.map(argument => argument?.name)
