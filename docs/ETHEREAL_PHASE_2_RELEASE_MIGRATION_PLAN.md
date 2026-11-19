@@ -41,7 +41,7 @@ The following SHA-256 values were emitted by successful GitHub Actions CI run [#
 | `20261118000800_controlled_owner_bootstrap.sql` | `03a0f3b4c73331532bf027260e3ddca570fcdf327d0382777aa3e3162be45e98` |
 | `20261118000900_revoke_public_rls_auto_enable.sql` | `8bbaed3624146df4dc78da915fae0eab5540fb23608dd13f6dbd1932c527e9cd` |
 
-CI run #16 completed automated tests, manifest generation, lint, and production build successfully. This is a reproducibility record, **not** independent security approval or proof of live Supabase concurrency.
+CI run #49 (commit `30b475b7d3002a01ef1737978317371244814e19`) passed 48 automated tests, the exact nine-file manifest/preflight, lint, production build, and the PostgreSQL 17.12 real-concurrency rehearsal: **72/72 checks passed**. The rehearsal uses separate PostgreSQL sessions and a local stand-in for the Supabase-owned event-trigger function; it does not validate Supabase Auth, JWT, PostgREST, pooler, or the actual platform trigger. This is not independent security approval.
 
 ## 2. Current security and feature boundaries
 
@@ -57,8 +57,8 @@ CI run #16 completed automated tests, manifest generation, lint, and production 
 2. Owner approval for those exact hashes, repository commit, target project ref, and migration-history strategy.
 3. Fresh read-only inspection of the intended staging project, including project identity, schema, migration ledger, Auth configuration/users, Storage buckets/policies, grants, RLS, triggers, and functions.
 4. A verified pre-deployment backup and a successful restore rehearsal. Confirm whether database, Auth, and Storage state are covered; do not assume a database-only dump is a complete project recovery.
-5. Rehearsal of the exact nine-file set on a disposable Supabase-compatible environment, including real concurrent database sessions and Auth/PostgREST/RLS checks. Local PGlite tests are useful regression coverage but do not substitute for this.
-6. Full local automated tests, lint, and production build on the frozen release commit.
+5. The exact nine-file set has passed a disposable PostgreSQL 17.12 real-concurrency rehearsal in CI (72/72 checks). Still required: a Supabase-compatible staging rehearsal or controlled staging validation for real Auth/JWT/PostgREST/pooler/RLS behavior and the actual platform event trigger. PGlite and vanilla PostgreSQL tests do not substitute for these platform checks.
+6. Automated tests (48 passed), lint, production build, release manifest/preflight, and PostgreSQL 17.12 concurrency rehearsal (72/72) have passed in CI run #49. Re-run them on the final frozen commit after any further SQL or code changes.
 7. No migration-history mismatch, no accidental inclusion of either 20261117 draft, and no ambiguity about the staging target.
 8. Separate explicit authorization before any staging database write.
 
