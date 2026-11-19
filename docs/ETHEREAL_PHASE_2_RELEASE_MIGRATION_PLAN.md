@@ -43,6 +43,15 @@ The following SHA-256 values were emitted by successful GitHub Actions CI run [#
 
 CI run #49 (commit `30b475b7d3002a01ef1737978317371244814e19`) passed 48 automated tests, the exact nine-file manifest/preflight, lint, production build, and the PostgreSQL 17.12 real-concurrency rehearsal: **72/72 checks passed**. The rehearsal uses separate PostgreSQL sessions and a local stand-in for the Supabase-owned event-trigger function; it does not validate Supabase Auth, JWT, PostgREST, pooler, or the actual platform trigger. This is not independent security approval.
 
+## 1B. Current release-candidate verification (20 November 2026)
+
+- Candidate commit: `e19cbd34a37ac4115c1f7297edcb9d5c689d8c9c`.
+- GitHub Actions CI runs [#95](https://github.com/Harshrajput88/ethereal-co-business-manager/actions/runs/44591639321) and [#96](https://github.com/Harshrajput88/ethereal-co-business-manager/actions/runs/44591655978) passed.
+- 53/53 automated tests passed, including cross-user sale/payment idempotency replay denial and same-user retry coverage.
+- PostgreSQL 17.12 separate-session concurrency rehearsal: 73/73 checks passed.
+- Nine-file migration hash preflight, lint (0 errors; warnings remain), and production build passed.
+- These results supersede the earlier CI #49 counts for the current candidate. They do not supersede the platform-specific, backup/restore, independent-review, or business-acceptance preconditions below.
+
 ## 2. Current security and feature boundaries
 
 - Migration 007 contains business authorization and integrity remediation.
