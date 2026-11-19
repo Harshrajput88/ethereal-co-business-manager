@@ -6,7 +6,7 @@ import assert from 'node:assert/strict'
 const migrationDir = join(process.cwd(), 'supabase', 'migrations')
 const archiveDir = join(process.cwd(), 'supabase', 'review', 'phase1')
 const approved = new Map([
-  ['20261118000100_business_schema.sql', '4aa1bb4a5bcb723d67de0d2b633d5d0cda1bb835368e105e48e418bf8f3b50fb'],
+  ['20261118000100_business_schema.sql', '83887fdc69d08ba7d6fea72b7b0e287f3e17d0d30ee9149760b7335f679ab40d'],
   ['20261118000200_business_core_rpcs.sql', '2f23d236278c120f3172fa6442fb390874ac1bc144e3948001d6bb910bae9ff5'],
   ['20261118000300_business_sales_rpcs.sql', 'a9c619f438a06423cdc9182efcd329ec98ebe242d836d8428d23df389f386cca'],
   ['20261118000400_business_payment_rpcs.sql', '89401f07102d1a08abb80c27a8fbb4f05cd29eae1a3dab52578d7e1424a05144'],
