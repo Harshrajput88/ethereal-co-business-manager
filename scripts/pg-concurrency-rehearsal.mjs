@@ -253,7 +253,6 @@ async function seedFixtures() {
 async function scenarioFirstOwnerClaim() {
   scenarioLogger('1. Concurrent first-owner claims')
   const checks = []
-  const reference = randomUUID()
   const raceResult = await race({
     roleA: 'authenticated', userA: OWNER,
     bodyA: 'SELECT public.api_claim_owner();',
