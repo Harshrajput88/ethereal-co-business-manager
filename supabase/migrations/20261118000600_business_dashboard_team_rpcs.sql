@@ -30,7 +30,7 @@ SECURITY DEFINER
 SET search_path = ''
 AS $function$
   SELECT CASE
-    WHEN public.api_role() NOT IN ('owner', 'admin') THEN '[]'::jsonb
+    WHEN public.api_role() IS NULL OR public.api_role() NOT IN ('owner', 'admin') THEN '[]'::jsonb
     ELSE (
       SELECT COALESCE(jsonb_agg(jsonb_build_object(
         'id', p.id,
@@ -356,7 +356,7 @@ SECURITY DEFINER
 SET search_path = ''
 AS $function$
   SELECT CASE
-    WHEN public.api_role() NOT IN ('owner', 'admin') THEN '[]'::jsonb
+    WHEN public.api_role() IS NULL OR public.api_role() NOT IN ('owner', 'admin') THEN '[]'::jsonb
     ELSE (
       SELECT COALESCE(jsonb_agg(jsonb_build_object(
         'id', a.id,
