@@ -593,16 +593,25 @@ async function scenarioReleaseTailMigrations() {
   scenarioLogger('9. Release-tail security migrations 008 and 009')
   const checks = []
 
-  // Rehearse the Supabase-owned event-trigger function ACL locally. The real
-  // platform function is not present in a vanilla PostgreSQL cluster.
+  // Rehearse a real PostgreSQL event trigger with the same owner/ACL shape
+  // as Supabase's platform function. This proves DDL still fires after browser
+  // EXECUTE is revoked; it does not emulate Supabase's RLS-enabling body.
   await admin(`
+    CREATE TABLE public.phase3_event_trigger_probe (tag text NOT NULL);
     CREATE OR REPLACE FUNCTION public.rls_auto_enable()
     RETURNS event_trigger
     LANGUAGE plpgsql
     SECURITY DEFINER
     SET search_path = ''
-    AS $function$ BEGIN NULL; END; $function$;
+    AS $function$
+    BEGIN
+      INSERT INTO public.phase3_event_trigger_probe(tag) VALUES (TG_TAG);
+    END;
+    $function$;
     GRANT EXECUTE ON FUNCTION public.rls_auto_enable() TO PUBLIC;
+    CREATE EVENT TRIGGER phase3_ensure_rls_probe
+      ON ddl_command_end
+      EXECUTE FUNCTION public.rls_auto_enable();
   `)
 
   for (const file of TAIL_MIGRATIONS) {
@@ -656,6 +665,11 @@ async function scenarioReleaseTailMigrations() {
     rlsPublicGrant[0].public_can_execute === false, JSON.stringify(rlsPublicGrant[0]))
   expect(checks, 'trusted postgres operator retains rls_auto_enable execution',
     rlsPrivileges[0].operator_can_execute === true, JSON.stringify(rlsPrivileges[0]))
+
+  await admin('CREATE TABLE public.phase3_post_revoke_ddl_probe (id integer)')
+  const triggerProbe = await rows(`SELECT tag FROM public.phase3_event_trigger_probe ORDER BY ctid DESC LIMIT 1`)
+  expect(checks, 'trusted event trigger still fires after browser EXECUTE revocation',
+    triggerProbe.length === 1 && triggerProbe[0].tag === 'CREATE TABLE', JSON.stringify(triggerProbe))
 
   return { name: '9. Release-tail security migrations 008 and 009', checks,
     evidence: { ownerPrivileges: ownerPrivileges[0], rlsPrivileges: rlsPrivileges[0], blockedClaimError: lastLine(blockedClaim.err) } }
