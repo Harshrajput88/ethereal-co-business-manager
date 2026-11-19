@@ -5,6 +5,7 @@ import {
   subscribeIntegrationStatus
 } from './lib/integrationStatus'
 import { AppContext } from './AppContext'
+import { deferAuthEvent } from './lib/authEvents.js'
 import { formatDate, titleCase } from './lib/format'
 import { useApiData } from './hooks/useApiData'
 import Icon from './components/Icon'
@@ -232,18 +233,33 @@ export default function App() {
 
   useEffect(() => {
     if (!ready || !backend) return undefined
+    let active = true
     let unsubscribe
-    try {
-      unsubscribe = api.onAuthChange(async () => {
+    const handleAuthEvent = deferAuthEvent(async event => {
+      if (!active) return
+      if (event === null) {
+        setHasSession(false)
+        setProfile(null)
+        setProfileError('')
+        return
+      }
+      try {
         const session = await api.getSession()
+        if (!active) return
         setHasSession(Boolean(session?.user))
         setProfile(session?.profile || null)
         setProfileError(session?.profileError || '')
-      })
+      } catch (error) {
+        if (active) setProfileError(error.message || 'The session could not be refreshed.')
+      }
+    })
+    try {
+      unsubscribe = api.onAuthChange(handleAuthEvent)
     } catch {
       // The backend may not expose auth events; explicit sign-in handles it.
     }
     return () => {
+      active = false
       if (typeof unsubscribe === 'function') unsubscribe()
     }
   }, [ready, backend])
