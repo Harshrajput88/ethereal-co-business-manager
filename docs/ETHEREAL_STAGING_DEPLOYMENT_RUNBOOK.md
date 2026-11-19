@@ -1,6 +1,6 @@
 # Ethereal Co. — Staging Deployment Runbook
 
-**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. Local remediation and regression coverage have since been added for the previously identified authorization, return-limit, payment-allocation, idempotency, and owner-bootstrap issues; the local suite passes. That is not a substitute for independent security review or a real Supabase-compatible rehearsal with actual concurrent database sessions. Keep the eight-file business release set, the separate ninth platform-hardening migration, and both historical drafts unchanged until those external gates are complete.
+**Status: HOLD — do not deploy this migration package yet.** This runbook describes a future, explicitly approved staging release. It is not authorization to connect to Supabase, execute SQL, run a migration, or write to Storage. Local remediation and regression coverage have since been added for the previously identified authorization, return-limit, payment-allocation, idempotency, and owner-bootstrap issues; the local suite passes. That is not a substitute for independent security review or a real Supabase-compatible rehearsal with actual concurrent database sessions. Keep the canonical nine-file release set and both historical drafts unchanged until those external gates are complete.
 
 ## Target and scope
 
@@ -31,7 +31,7 @@ WHERE p.id = u.id
 
 ## Explicit migration order
 
-The intended current business package is these eight files, in timestamp order. A separate platform-hardening migration follows them:
+The intended current release package is these nine files, in timestamp order:
 
 1. `supabase/migrations/20261118000100_business_schema.sql`
 2. `supabase/migrations/20261118000200_business_core_rpcs.sql`
@@ -87,7 +87,7 @@ Do not proceed until all are true:
 
 1. Reconfirm the exact staging ref immediately before the write and exclude production.
 2. Use the separately approved, explicit migration selection—not a generic push while the older drafts are present.
-3. Apply the eight business migrations in order, then migration 009 for platform event-trigger privilege hardening. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
+3. Apply the eight business migrations in order, including migration 009 for platform event-trigger privilege hardening. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
 4. Capture migration output and resulting migration-history IDs. Verify each file is recorded exactly once.
 5. Request/reload the PostgREST schema cache using the approved Supabase mechanism only after all DDL completes.
 6. Provision `profile-picture` and narrowly scoped Storage policies in a separate reviewed step, only if explicitly approved.
