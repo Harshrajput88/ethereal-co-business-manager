@@ -138,6 +138,18 @@ Use disposable Auth accounts and clearly marked test data. Verify:
 11. Profile update and approved avatar upload work; all other user's profile/storage access is denied.
 12. Browser network responses show the intended staging project and no silent demo fallback. Production remains untouched.
 
+## Read-only post-deployment database probe
+
+Before any browser smoke test, run the committed diagnostic script against the intended staging project using a read-only SQL session:
+
+```bash
+psql "$STAGING_DATABASE_URL" -v ON_ERROR_STOP=1 -X -f scripts/staging-readiness.sql
+```
+
+The script performs SELECT-only checks for the nine migration versions, RLS coverage, browser-role EXECUTE privileges on API functions, the controlled owner-claim restriction, the Auth signup trigger, and the platform `ensure_rls` event trigger. It does not alter schema, data, grants, or migration history. A failed check is a stop condition; do not proceed to user-data tests until it is explained.
+
+Do not put a database password or connection URI in GitHub, source code, issue comments, or chat. Use a short-lived local environment variable or the approved secret manager. This probe is intended for after the reviewed migrations have been applied to staging; the current staging project is still an empty pre-deployment target.
+
 ## Rollback and recovery
 
 - Prefer a forward corrective migration for application defects once business writes have started; do not delete append-only audit, inventory, allocation, invoice, or ledger rows as an ad hoc rollback.
