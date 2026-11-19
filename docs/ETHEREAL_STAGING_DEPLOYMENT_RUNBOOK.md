@@ -146,7 +146,7 @@ Before any browser smoke test, run the committed diagnostic script against the i
 psql "$STAGING_DATABASE_URL" -v ON_ERROR_STOP=1 -X -f scripts/staging-readiness.sql
 ```
 
-The script performs SELECT-only checks for the nine migration versions, RLS coverage, browser-role EXECUTE privileges on API functions, the controlled owner-claim restriction, the Auth signup trigger, and the platform `ensure_rls` event trigger. It does not alter schema, data, grants, or migration history. A failed check is a stop condition; do not proceed to user-data tests until it is explained.
+The committed `scripts/staging-readiness.sql` performs SELECT-only checks for the nine migration versions, RLS coverage, browser-role EXECUTE privileges on SECURITY DEFINER functions, the controlled owner-claim restriction, the Auth signup trigger, and the platform `ensure_rls` event trigger. It does not alter schema, data, grants, or migration history. A failed check is a stop condition; do not proceed to user-data tests until it is explained.
 
 Do not put a database password or connection URI in GitHub, source code, issue comments, or chat. Use a short-lived local environment variable or the approved secret manager. This probe is intended for after the reviewed migrations have been applied to staging; the current staging project is still an empty pre-deployment target.
 
