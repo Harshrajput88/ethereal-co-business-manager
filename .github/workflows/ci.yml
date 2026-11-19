@@ -30,6 +30,8 @@ jobs:
         run: npm test
       - name: Print exact release migration SHA-256 manifest
         run: node scripts/release-migration-manifest.mjs
+      - name: Verify frozen migration allowlist and hashes
+        run: node scripts/verify-release-preflight.mjs
       - name: Run lint
         run: npm run lint
       - name: Build production bundle
