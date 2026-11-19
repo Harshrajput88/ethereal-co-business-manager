@@ -59,6 +59,15 @@ test('migration 008 revokes self-service owner claiming and leaves new signups p
   assert.equal(privileges.rows[0].authenticated_can_execute, false)
   assert.equal(privileges.rows[0].anon_can_execute, false)
 
+  const ownerPublicGrant = await db.query(`
+    SELECT EXISTS (
+      SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+      WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+    ) AS public_can_execute
+    FROM pg_proc p WHERE p.oid = 'public.api_claim_owner()'::regprocedure
+  `)
+  assert.equal(ownerPublicGrant.rows[0].public_can_execute, false)
+
   await db.exec('SET ROLE authenticated')
   await db.query("SELECT set_config('request.jwt.claim.sub', $1, false)", [ownerId])
   try {
@@ -99,4 +108,13 @@ test('migration 009 revokes browser execution of the Supabase RLS event-trigger 
   assert.equal(privileges.rows[0].anon_can_execute, false);
   assert.equal(privileges.rows[0].authenticated_can_execute, false);
   assert.equal(privileges.rows[0].operator_can_execute, true);
+
+  const rlsPublicGrant = await db.query(`
+    SELECT EXISTS (
+      SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+      WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+    ) AS public_can_execute
+    FROM pg_proc p WHERE p.oid = 'public.rls_auto_enable()'::regprocedure
+  `)
+  assert.equal(rlsPublicGrant.rows[0].public_can_execute, false)
 });
