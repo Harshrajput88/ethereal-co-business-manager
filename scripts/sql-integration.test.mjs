@@ -414,7 +414,7 @@ test('idempotency and role management', async () => {
     () => asUser(ids.sales2,
       'SELECT public.api_create_sale($1, $2, $3::jsonb, $4)',
       [shopB, 'cash', JSON.stringify([{ variant_id: variant1L, cartons: 1 }]), ref]),
-    /Not authorized/
+    /This client reference belongs to another request/
   )
 
   const rightfulRetry = row(await asUser(ids.sales1,
@@ -449,7 +449,7 @@ test('payment idempotency references cannot be replayed by another salesperson',
       'SELECT public.api_record_payment($1, $2, $3, now(), NULL, $4::jsonb, $5)',
       [shopB, 'upi', 25, '[]', ref]
     ),
-    /Not authorized/
+    /This client reference belongs to another request/
   )
 
   const rightfulRetry = row(await asUser(ids.sales1,
