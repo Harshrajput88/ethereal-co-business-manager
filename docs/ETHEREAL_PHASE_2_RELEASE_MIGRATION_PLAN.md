@@ -90,6 +90,8 @@ Run Supabase security, performance, and health advisors after deployment. Resolv
 ## 5. Backup, recovery, and rollback
 
 - Record backup timestamp, target ref, scope, retention, restore operator, and recovery procedure.
+- Verify the actual Supabase plan and backup availability before relying on scheduled backups. Supabase documents daily automatic database backups for Pro, Team and Enterprise; Free projects should export and retain off-site backups. See [Supabase Database Backups](https://supabase.com/docs/guides/platform/backups).
+- Supabase database backups do **not** include the bytes of objects stored through the Storage API. Keep Storage objects backed up separately if/when the app begins storing profile pictures or other files.
 - Verify restoration access and rehearse recovery before writes. A public-schema-only dump is not sufficient evidence that Auth and Storage can be recovered.
 - Stop immediately on the first migration error. Preserve logs and the last completed migration ID. Do not edit migration history or rerun modified SQL in place.
 - Prefer forward corrective migrations after business data exists. Do not drop or truncate append-only audit, inventory, allocation, invoice, or ledger records as an ad hoc rollback.
