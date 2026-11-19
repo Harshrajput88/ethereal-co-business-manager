@@ -54,8 +54,8 @@ The drafts create overlapping schema/types/policies, have prior security-review 
 
 Do not proceed until all are true:
 
-- The findings in `reports/ETHEREAL_SIX_MIGRATION_SECURITY_RELEASE_REVIEW.pdf` are addressed and independently reviewed. In particular, fix list-RPC NULL authorization, cumulative/concurrent return limits, payment allocation serialization and amount rounding, and bootstrap/last-owner races.
-- Re-run local SQL parsing, contract checks, and automated tests against the corrected package. Add regression tests for each fix and concurrent operations.
+- An independent reviewer has reviewed the exact current nine-migration SQL package and its SHA-256 manifest. The older `ETHEREAL_SIX_MIGRATION_SECURITY_RELEASE_REVIEW.pdf` concerns a superseded package and is historical context only; it is not approval of the current release. Confirm that the earlier NULL-authorization, cumulative/concurrent return, payment-allocation/rounding, and owner-bootstrap/last-owner findings remain remediated in the current files.
+- Re-run local SQL parsing, contract checks, and automated tests against the exact nine-file package. The PGlite regression suite covers migrations 001–009; the separate PostgreSQL 17 harness must also be executed after its new 008/009 checks are added. Do not treat the old 62/62 seven-migration report as evidence for migrations 008–009.
 - Obtain owner/security approval for the exact nine-file package (eight business migrations plus the platform-hardening migration) and migration-history strategy.
 - Verify staging target ref and project identity; production ref must not match.
 - Obtain a fresh read-only object/history/Auth/Storage inventory. Reconcile all existing objects and identify whether any data must be preserved.
