@@ -87,7 +87,7 @@ Do not proceed until all are true:
 
 1. Reconfirm the exact staging ref immediately before the write and exclude production.
 2. Use the separately approved, explicit migration selection—not a generic push while the older drafts are present.
-3. Apply the eight business migrations in order, including migration 009 for platform event-trigger privilege hardening. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
+3. Apply business migrations 001–008 in order, then apply platform-hardening migration 009. Stop at the first error; do not continue or manually mark history applied to bypass a failure.
 4. Capture migration output and resulting migration-history IDs. Verify each file is recorded exactly once.
 5. Request/reload the PostgREST schema cache using the approved Supabase mechanism only after all DDL completes.
 6. Provision `profile-picture` and narrowly scoped Storage policies in a separate reviewed step, only if explicitly approved.
