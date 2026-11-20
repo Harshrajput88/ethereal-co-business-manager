@@ -1,6 +1,7 @@
 import { createSeedState, hashPassword } from './localSeed.js'
 import { businessDate, monthStart } from './format.js'
-import { round2 } from './business.js'
+import { aggregateReport, round2 } from './business.js'
+import { fetchCompleteList } from './fetchCompleteList.js'
 
 const STORAGE_KEY = 'ethereal.local.v1'
 const SESSION_KEY = 'ethereal.local.session'
@@ -1792,6 +1793,16 @@ async function getProductReport({ from = null, to = null } = {}) {
   return [...map.values()].sort((a, b) => b.revenue - a.revenue)
 }
 
+async function getFinancialReport({ from = null, to = null } = {}) {
+  const [sales, payments, expenses, products] = await Promise.all([
+    fetchCompleteList(limit => getSales({ from, to, limit }), 300),
+    fetchCompleteList(limit => getPayments({ from, to, limit }), 300),
+    fetchCompleteList(limit => getExpenses({ from, to, limit }), 300),
+    getProductReport({ from, to })
+  ])
+  return aggregateReport({ sales, payments, expenses, products })
+}
+
 export const localBackend = {
   mode: 'local',
   getSession,
@@ -1841,6 +1852,7 @@ export const localBackend = {
   reviewExpense,
   markExpensePaid,
   getDashboard,
-  getProductReport
+  getProductReport,
+  getFinancialReport
 }
 
