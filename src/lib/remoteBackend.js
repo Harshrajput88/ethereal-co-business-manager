@@ -358,6 +358,10 @@ async function getProductReport({ from = null, to = null } = {}) {
   return rpc('api_product_report', { p_from: from, p_to: to })
 }
 
+async function getFinancialReport({ from = null, to = null } = {}) {
+  return rpc('api_financial_report', { p_from: from, p_to: to })
+}
+
 export const remoteBackend = {
   mode: 'supabase',
   getSession,
@@ -407,5 +411,6 @@ export const remoteBackend = {
   reviewExpense,
   markExpensePaid,
   getDashboard,
-  getProductReport
+  getProductReport,
+  getFinancialReport
 }
