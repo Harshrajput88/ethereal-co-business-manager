@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
+import { fetchCompleteList } from '../lib/fetchCompleteList'
 import { formatDate, formatDateTime, formatMoney, titleCase } from '../lib/format'
 import Icon from '../components/Icon'
 import PaymentModal from '../components/PaymentModal'
@@ -100,7 +101,7 @@ export default function Payments() {
   const [receiptOpen, setReceiptOpen] = useState(false)
 
   const state = useApiData(
-    () => api.getPayments({ from: from || null, to: to || null, limit: 300 }),
+    () => fetchCompleteList(limit => api.getPayments({ from: from || null, to: to || null, limit }), 300),
     [app.version, from, to]
   )
   const payments = state.data || []
