@@ -41,7 +41,10 @@ function findClosingParen(source, openIndex) {
 function parseFunctionDefinitions(files) {
   const definitions = new Map()
   for (const file of files) {
-    const source = readFileSync(join(migrationsDir, file), 'utf8')
+    const sourcePath = file.startsWith('pending/')
+      ? join(root, 'supabase', 'review', file)
+      : join(migrationsDir, file)
+    const source = readFileSync(sourcePath, 'utf8')
     const pattern = /CREATE\s+OR\s+REPLACE\s+FUNCTION\s+public\.(api_[a-z0-9_]+)\s*\(/gi
     for (const match of source.matchAll(pattern)) {
       const openIndex = match.index + match[0].lastIndexOf('(')
