@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
+import { fetchCompleteList } from '../lib/fetchCompleteList'
 import { formatDate, formatMoney, formatNumber, titleCase } from '../lib/format'
 import Icon from '../components/Icon'
 import NewSaleModal from '../components/NewSaleModal'
@@ -29,7 +30,7 @@ export default function Sales() {
   const [detailId, setDetailId] = useState('')
 
   const state = useApiData(
-    () => api.getSales({ from: from || null, to: to || null, limit: 300 }),
+    () => fetchCompleteList(limit => api.getSales({ from: from || null, to: to || null, limit }), 300),
     [app.version, from, to]
   )
   const sales = state.data || []
