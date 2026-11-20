@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
+import { fetchCompleteList } from '../lib/fetchCompleteList'
 import { formatDate, formatDateTime, formatMoney, formatNumber, titleCase } from '../lib/format'
 import Icon from '../components/Icon'
 import ReturnModal from '../components/ReturnModal'
@@ -32,7 +33,7 @@ export default function Returns() {
   const [saving, setSaving] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  const state = useApiData(() => api.getReturns(200), [app.version])
+  const state = useApiData(() => fetchCompleteList(limit => api.getReturns(limit), 200), [app.version])
   const returns = state.data || []
   const detail = detailId ? returns.find(request => request.id === detailId) : null
 
