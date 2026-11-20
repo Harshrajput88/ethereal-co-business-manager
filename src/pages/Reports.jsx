@@ -3,6 +3,7 @@ import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
 import { aggregateReport } from '../lib/business'
+import { fetchCompleteList } from '../lib/fetchCompleteList'
 import {
   addDays,
   downloadCsv,
@@ -37,9 +38,9 @@ export default function Reports() {
   const state = useApiData(
     async () => {
       const [sales, payments, expenses, products, settings] = await Promise.all([
-        api.getSales({ from, to, limit: 1000 }),
-        api.getPayments({ from, to, limit: 1000 }),
-        api.getExpenses({ from, to, limit: 1000 }),
+        fetchCompleteList(limit => api.getSales({ from, to, limit })),
+        fetchCompleteList(limit => api.getPayments({ from, to, limit })),
+        fetchCompleteList(limit => api.getExpenses({ from, to, limit })),
         api.getProductReport({ from, to }),
         api.getBusinessSettings()
       ])
