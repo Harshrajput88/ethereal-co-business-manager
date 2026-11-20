@@ -40,3 +40,13 @@ test('rejects invalid limits and malformed API responses', async () => {
   await assert.rejects(() => fetchCompleteList(async () => [], 0), RangeError)
   await assert.rejects(() => fetchCompleteList(async () => null), TypeError)
 })
+
+test('preserves object responses while completing a nested history list', async () => {
+  const movements = Array.from({ length: 450 }, (_, id) => ({ id }))
+  const result = await fetchCompleteList(async limit => ({
+    stock: [{ variant: '500ml' }],
+    movements: movements.slice(0, limit)
+  }), 200, 'movements')
+  assert.equal(result.stock.length, 1)
+  assert.equal(result.movements.length, 450)
+})
