@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
+import { fetchCompleteList } from '../lib/fetchCompleteList'
 import { downloadCsv, formatDateTime, formatMoney, formatNumber, titleCase } from '../lib/format'
 import Icon from '../components/Icon'
 import {
@@ -32,7 +33,7 @@ export default function Inventory() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const state = useApiData(() => api.getInventory(200), [app.version])
+  const state = useApiData(() => fetchCompleteList(limit => api.getInventory(limit), 200, 'movements'), [app.version])
   const stock = state.data?.stock || []
   const movements = state.data?.movements || []
 
