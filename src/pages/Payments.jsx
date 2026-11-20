@@ -175,7 +175,7 @@ export default function Payments() {
       state.reload({ quiet: true })
     } catch (err) {
       setActionError(action === 'approve'
-        ? `Verification was not completed. Refresh the payment list and reopen this payment before retrying so its invoice allocations are recalculated. Server details: ${err.message}`
+        ? `Payment was not verified and remains submitted with its original allocation. Do not retry verification unchanged. Reject this submission with a clear reason, then record the payment again using the current outstanding invoices. Server details: ${err.message}`
         : err.message)
     } finally {
       setSaving(false)
