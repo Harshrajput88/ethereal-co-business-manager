@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
+import { fetchCompleteList } from '../lib/fetchCompleteList'
 import { businessDate, downloadCsv, formatDate, formatMoney } from '../lib/format'
 import Icon from '../components/Icon'
 import {
@@ -57,7 +58,7 @@ export default function Expenses() {
   const [error, setError] = useState('')
 
   const state = useApiData(
-    () => api.getExpenses({ from: from || null, to: to || null, limit: 300 }),
+    () => fetchCompleteList(limit => api.getExpenses({ from: from || null, to: to || null, limit }), 300),
     [app.version, from, to]
   )
   const expenses = state.data || []
