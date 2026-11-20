@@ -484,9 +484,10 @@ for the pagination and operational-history implementation.
 - Return and inventory movement history retrieve beyond the former 200-row limit.
 - Inventory response handling preserves the stock summary while checking the
   completeness of its nested movement list.
-- Payment verification failure messaging instructs an administrator to refresh
-  and reopen the submitted payment before retrying, so the server recalculates
-  allocations against current outstanding balances.
+- Payment verification failure messaging explains that a stale allocation leaves
+  the payment submitted and unverified. The operator must reject that submission
+  with a reason and record the payment again using current outstanding invoices;
+  simply retrying the unchanged allocation is not a valid recovery.
 
 The complete-list helper uses the existing limit-only RPC contract and increases
 the requested limit until a short page is returned. This prevents the current
