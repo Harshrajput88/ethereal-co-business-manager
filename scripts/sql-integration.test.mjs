@@ -89,6 +89,7 @@ before(async () => {
   for (const file of migrationFiles) {
     await db.exec(readFileSync(join(root, 'supabase', 'migrations', file), 'utf8'))
   }
+  await db.exec(readFileSync(join(root, 'supabase', 'review', 'pending', '20261120000100_server_side_financial_report.sql'), 'utf8'))
 
   await db.query(
     `INSERT INTO auth.users (id, email, raw_user_meta_data)
@@ -373,6 +374,30 @@ test('expenses require independent approval and can be settled', async () => {
     () => asUser(ids.admin, 'SELECT public.api_review_expense($1, $2, NULL)', [own.id, 'approve']),
     /cannot approve or reject your own expense/
   )
+})
+
+
+test('server-side financial report aggregates complete data and respects its date window', async () => {
+  const result = row(await asUser(ids.owner, 'SELECT public.api_financial_report(NULL, NULL) AS r')).r
+  assert.equal(typeof result.revenue, 'number')
+  assert.equal(typeof result.collections, 'number')
+  assert.equal(typeof result.outstanding, 'number')
+  assert.equal(typeof result.expenses, 'number')
+  assert.ok(Array.isArray(result.byShop))
+  assert.ok(Array.isArray(result.bySalesperson))
+  assert.ok(Array.isArray(result.daily))
+  assert.ok(Array.isArray(result.methods))
+  assert.ok(Array.isArray(result.categories))
+  assert.ok(Array.isArray(result.products))
+
+  const visibleSales = row(await asUser(ids.owner, 'SELECT public.api_sales_list(NULL, NULL, 1000) AS r')).r
+    .filter(sale => sale.status === 'confirmed')
+  assert.equal(result.transactions, visibleSales.length)
+  assert.equal(Number(result.revenue), visibleSales.reduce((sum, sale) => sum + Number(sale.grand_total), 0))
+
+  const filtered = row(await asUser(ids.owner,
+    'SELECT public.api_financial_report(current_date, current_date) AS r')).r
+  assert.ok(filtered.transactions <= result.transactions)
 })
 
 test('salespeople cannot sell to unassigned shops or bypass the API', async () => {
