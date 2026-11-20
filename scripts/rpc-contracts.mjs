@@ -135,9 +135,12 @@ function findCallers(calls) {
 }
 
 export function auditRpcContracts() {
-  const migrationFiles = readdirSync(migrationsDir)
-    .filter(file => /^20261118.*\.sql$/.test(file))
-    .sort()
+  const migrationFiles = [
+    ...readdirSync(migrationsDir).filter(file => /^20261118.*\.sql$/.test(file)),
+    ...readdirSync(join(root, 'supabase', 'review', 'pending'))
+      .filter(file => file.endsWith('.sql'))
+      .map(file => `pending/${file}`)
+  ].sort()
   const definitions = parseFunctionDefinitions(migrationFiles)
   const calls = findCallers(parseFrontendCalls())
   const errors = []
