@@ -294,6 +294,7 @@ export default function Inventory() {
           />
         </div>
         {filteredMovements.length ? (
+          <>
           <div className="table-wrap">
             <table className="data-table">
               <thead>
