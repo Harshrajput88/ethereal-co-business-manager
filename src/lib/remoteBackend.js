@@ -31,6 +31,28 @@ async function rpc(name, args = {}) {
   }
 }
 
+async function fetchCursorPages(name, filters = {}, pageSize = 300, arrayKey = null) {
+  if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 1000) {
+    throw new RangeError('Page size must be between 1 and 1000')
+  }
+  const rows = []
+  let cursor = null
+  let stock = null
+  while (true) {
+    const page = await rpc(name, { ...filters, p_cursor: cursor, p_limit: pageSize })
+    const items = arrayKey ? page?.[arrayKey] : page?.items
+    if (!Array.isArray(items)) throw new TypeError(`${name} returned an invalid page`)
+    if (arrayKey && stock === null) stock = page.stock || []
+    rows.push(...items)
+    if (!page.has_more) break
+    if (!page.next_cursor || page.next_cursor === cursor) {
+      throw new Error(`${name} returned an invalid pagination cursor`)
+    }
+    cursor = page.next_cursor
+  }
+  return arrayKey ? { stock: stock || [], [arrayKey]: rows } : rows
+}
+
 async function loadProfile(userId) {
   const { data, error } = await requireClient()
     .from('profiles')
@@ -222,7 +244,7 @@ async function getAuditLog(limit = 200) {
 }
 
 async function getSales({ from = null, to = null, limit = 300 } = {}) {
-  return rpc('api_sales_list', { p_from: from, p_to: to, p_limit: limit })
+  return fetchCursorPages('api_sales_page', { p_from: from, p_to: to }, limit)
 }
 
 async function createSale({ shopId, paymentTerms, lines, clientReference = null }) {
@@ -251,7 +273,7 @@ async function getShopOpenSales(shopId) {
 }
 
 async function getPayments({ from = null, to = null, limit = 300 } = {}) {
-  return rpc('api_payments_list', { p_from: from, p_to: to, p_limit: limit })
+  return fetchCursorPages('api_payments_page', { p_from: from, p_to: to }, limit)
 }
 
 async function recordPayment({
@@ -283,7 +305,8 @@ async function verifyPayment({ paymentId, decision, reason }) {
 }
 
 async function getInventory(limit = 150) {
-  return rpc('api_inventory_list', { p_limit: limit })
+  const result = await fetchCursorPages('api_inventory_movements_page', {}, limit, 'movements')
+  return { stock: result.stock || [], movements: result.movements || [] }
 }
 
 async function receiveStock({ variantId, cartons, reason, clientReference = null }) {
@@ -305,7 +328,7 @@ async function adjustStock({ variantId, bucket, delta, reason }) {
 }
 
 async function getReturns(limit = 200) {
-  return rpc('api_returns_list', { p_limit: limit })
+  return fetchCursorPages('api_returns_page', {}, limit)
 }
 
 async function submitReturn({ saleId, reason, lines }) {
@@ -325,7 +348,7 @@ async function reviewReturn({ returnId, decision, reason }) {
 }
 
 async function getExpenses({ from = null, to = null, limit = 300 } = {}) {
-  return rpc('api_expenses_list', { p_from: from, p_to: to, p_limit: limit })
+  return fetchCursorPages('api_expenses_page', { p_from: from, p_to: to }, limit)
 }
 
 async function submitExpense({ expenseDate, category, description, amount, clientReference = null }) {
