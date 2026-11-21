@@ -135,13 +135,14 @@ function findCallers(calls) {
 }
 
 export function auditRpcContracts() {
-  const migrationFiles = [
-    ...readdirSync(migrationsDir).filter(file => /^20261118.*\.sql$/.test(file)),
-    ...readdirSync(join(root, 'supabase', 'review', 'pending'))
-      .filter(file => file.endsWith('.sql'))
-      .map(file => `pending/${file}`)
-  ].sort()
-  const definitions = parseFunctionDefinitions(migrationFiles)
+  const releaseMigrationFiles = readdirSync(migrationsDir)
+    .filter(file => /^20261118.*\.sql$/.test(file))
+    .sort()
+  const pendingContractFiles = readdirSync(join(root, 'supabase', 'review', 'pending'))
+    .filter(file => file.endsWith('.sql'))
+    .map(file => `pending/${file}`)
+  const contractMigrationFiles = [...releaseMigrationFiles, ...pendingContractFiles]
+  const definitions = parseFunctionDefinitions(contractMigrationFiles)
   const calls = findCallers(parseFrontendCalls())
   const errors = []
   for (const call of calls) {
@@ -168,5 +169,5 @@ export function auditRpcContracts() {
       errors.push(`${definition.name}: PUBLIC/anon execution is not explicitly revoked`)
     }
   }
-  return { migrationFiles, definitions, calls, errors }
+  return { migrationFiles: releaseMigrationFiles, contractMigrationFiles, definitions, calls, errors }
 }
