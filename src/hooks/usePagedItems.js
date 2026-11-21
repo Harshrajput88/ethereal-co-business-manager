@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 export function usePagedItems(items, pageSize = 25) {
   const [page, setPage] = useState(1)
@@ -8,10 +8,6 @@ export function usePagedItems(items, pageSize = 25) {
     () => items.slice((safePage - 1) * pageSize, safePage * pageSize),
     [items, safePage, pageSize]
   )
-
-  useEffect(() => {
-    setPage(1)
-  }, [items])
 
   return { page: safePage, pageCount, visibleItems, setPage }
 }
