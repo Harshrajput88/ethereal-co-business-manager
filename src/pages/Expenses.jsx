@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
-import { fetchCompleteList } from '../lib/fetchCompleteList'
 import { businessDate, downloadCsv, formatDate, formatMoney } from '../lib/format'
 import Icon from '../components/Icon'
 import {
