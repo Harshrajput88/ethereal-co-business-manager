@@ -33,7 +33,7 @@ export default function Inventory() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const state = useApiData(() => fetchCompleteList(limit => api.getInventory(limit), 200, 'movements'), [app.version])
+  const state = useApiData(() => api.getInventory(), [app.version])
   const stock = state.data?.stock || []
   const movements = state.data?.movements || []
 
