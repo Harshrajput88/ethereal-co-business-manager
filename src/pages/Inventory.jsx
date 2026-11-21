@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
@@ -57,6 +59,8 @@ export default function Inventory() {
         .some(value => String(value).toLowerCase().includes(needle))
     )
   }, [movements, query])
+
+  const { page, pageCount, visibleItems: visibleRows, setPage } = usePagedItems(filtered, 25)
 
   const selected = stock.find(item => item.variant_id === variantId)
   const currentBucket = selected?.[bucket] ?? 0
@@ -304,7 +308,7 @@ export default function Inventory() {
                 </tr>
               </thead>
               <tbody>
-                {filteredMovements.map(move => (
+                {visibleRows.map(move => (
                   <tr key={move.id}>
                     <td>{formatDateTime(move.occurred_at)}</td>
                     <td>
@@ -332,6 +336,7 @@ export default function Inventory() {
               </tbody>
             </table>
           </div>
+          <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
         ) : (
           <EmptyState
             icon="inventory"
