@@ -5,6 +5,8 @@ import { useApiData } from '../hooks/useApiData'
 import { formatDate, formatMoney, formatNumber } from '../lib/format'
 import Icon from '../components/Icon'
 import SaleDetailModal from '../components/SaleDetailModal'
+import TablePagination from '../components/TablePagination'
+import { usePagedItems } from '../hooks/usePagedItems'
 import {
   EmptyState,
   DataLoadFailure,
@@ -41,6 +43,8 @@ export default function Invoices() {
         .some(value => String(value).toLowerCase().includes(needle))
     )
   }, [invoices, query])
+
+  const pagination = usePagedItems(filtered, 25)
 
   const totals = useMemo(
     () => ({
@@ -125,7 +129,7 @@ export default function Invoices() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(sale => (
+                {pagination.visibleItems.map(sale => (
                   <tr key={sale.id} onClick={() => setSaleId(sale.id)}>
                     <td>
                       <strong>{sale.invoice_number}</strong>
@@ -158,6 +162,7 @@ export default function Invoices() {
             }
           />
         )}
+        <TablePagination page={pagination.page} pageCount={pagination.pageCount} total={filtered.length} pageSize={25} onPageChange={pagination.setPage} />
       </section>
 
       <p className="page-foot">
