@@ -21,8 +21,8 @@ SELECT jsonb_build_object('items',COALESCE((SELECT jsonb_agg(jsonb_build_object(
 'next_cursor',(SELECT jsonb_build_object('created_at',s.created_at,'id',s.id) FROM kept s ORDER BY s.created_at ASC,s.id ASC LIMIT 1))
 END;
 $function$;
-REVOKE ALL ON FUNCTION public.api_sales_page(date,date,jsonb,integer) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.api_sales_page(date,date,jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_sales_page(date,date,jsonb,integer) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION ON FUNCTION public.api_sales_page(date,date,jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_payments_page(p_from date DEFAULT NULL,p_to date DEFAULT NULL,p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 300)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -45,8 +45,8 @@ FROM public.payment_allocations pa JOIN public.sales s ON s.id=pa.sale_id WHERE 
 'next_cursor',(SELECT jsonb_build_object('created_at',p.created_at,'id',p.id) FROM kept p ORDER BY p.created_at ASC,p.id ASC LIMIT 1))
 END;
 $function$;
-REVOKE ALL ON FUNCTION public.api_payments_page(date,date,jsonb,integer) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.api_payments_page(date,date,jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_payments_page(date,date,jsonb,integer) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION ON FUNCTION public.api_payments_page(date,date,jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_returns_page(p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 200)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -68,8 +68,8 @@ FROM public.return_lines rl JOIN public.sale_lines sl ON sl.id=rl.sale_line_id W
 'next_cursor',(SELECT jsonb_build_object('submitted_at',r.submitted_at,'id',r.id) FROM kept r ORDER BY r.submitted_at ASC,r.id ASC LIMIT 1))
 END;
 $function$;
-REVOKE ALL ON FUNCTION public.api_returns_page(jsonb,integer) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.api_returns_page(jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_returns_page(jsonb,integer) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION ON FUNCTION public.api_returns_page(jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_expenses_page(p_from date DEFAULT NULL,p_to date DEFAULT NULL,p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 300)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -90,8 +90,8 @@ SELECT jsonb_build_object('items',COALESCE((SELECT jsonb_agg(jsonb_build_object(
 'next_cursor',(SELECT jsonb_build_object('expense_date',e.expense_date,'created_at',e.created_at,'id',e.id) FROM kept e ORDER BY e.expense_date ASC,e.created_at ASC,e.id ASC LIMIT 1))
 END;
 $function$;
-REVOKE ALL ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_inventory_movements_page(p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 150)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -118,5 +118,5 @@ BEGIN
  RETURN jsonb_build_object('stock',v_stock,'movements',v_items,'has_more',COALESCE(v_more,false),'next_cursor',v_next);
 END;
 $function$;
-REVOKE ALL ON FUNCTION public.api_inventory_movements_page(jsonb,integer) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.api_inventory_movements_page(jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_inventory_movements_page(jsonb,integer) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION ON FUNCTION public.api_inventory_movements_page(jsonb,integer) TO authenticated;
