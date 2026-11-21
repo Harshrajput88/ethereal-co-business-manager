@@ -90,6 +90,7 @@ before(async () => {
     await db.exec(readFileSync(join(root, 'supabase', 'migrations', file), 'utf8'))
   }
   await db.exec(readFileSync(join(root, 'supabase', 'review', 'pending', '20261120000100_server_side_financial_report.sql'), 'utf8'))
+  await db.exec(readFileSync(join(root, 'supabase', 'review', 'pending', '20261121000100_operational_cursor_pagination.sql'), 'utf8'))
 
   await db.query(
     `INSERT INTO auth.users (id, email, raw_user_meta_data)
@@ -501,4 +502,25 @@ test('dashboard and reports reflect verified money only', async () => {
 
   const sales = row(await asUser(ids.owner, 'SELECT public.api_sales_list() AS r')).r
   assert.ok(sales.every(s => s.invoice_number || s.status !== 'confirmed'))
+})
+
+
+test('cursor-paged operational RPCs load and return stable page envelopes', async () => {
+  const checks = [
+    ['api_sales_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_payments_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_expenses_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_returns_page', { p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_inventory_movements_page', { p_cursor: null, p_limit: 1 }, 'items']
+  ]
+  for (const [name, args, key] of checks) {
+    const placeholders = Object.keys(args).map((_, index) => '$' + (index + 1)).join(',')
+    const result = row(await asUser(ids.sales1, `SELECT public.${name}(${placeholders}) AS page`, Object.values(args))).page
+    assert.ok(Array.isArray(result[key]), name + ' returns an items array')
+    assert.equal(typeof result.has_more, 'boolean', name + ' returns has_more')
+    if (result.has_more) assert.ok(result.next_cursor, name + ' returns next_cursor when more rows exist')
+  }
+  const inventory = row(await asUser(ids.sales1,
+    'SELECT public.api_inventory_movements_page($1,$2) AS page', [null, 1])).page
+  assert.ok(Array.isArray(inventory.stock), 'inventory page preserves stock summary')
 })
