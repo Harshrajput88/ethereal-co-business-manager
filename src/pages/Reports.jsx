@@ -82,6 +82,30 @@ export default function Reports() {
     if (!report) return
     downloadCsv('ethereal-shop-performance.csv', report.byShop)
   }
+  function exportSalespeople() {
+    if (!report) return
+    downloadCsv('ethereal-salesperson-performance.csv', report.bySalesperson)
+  }
+
+  function exportProducts() {
+    if (!report) return
+    downloadCsv('ethereal-product-performance.csv', report.products)
+  }
+
+  function exportDaily() {
+    if (!report) return
+    downloadCsv('ethereal-daily-sales-collections.csv', report.daily)
+  }
+
+  function exportPaymentMethods() {
+    if (!report) return
+    downloadCsv('ethereal-payment-methods.csv', report.methods)
+  }
+
+  function exportExpenseCategories() {
+    if (!report) return
+    downloadCsv('ethereal-expense-categories.csv', report.categories)
+  }
 
   const maxDaily = report
     ? Math.max(1, ...report.daily.map(day => Math.max(day.revenue, day.collections)))
@@ -100,6 +124,12 @@ export default function Reports() {
         description="Sales, collections, returns and expenses for the selected period."
         actions={
           <>
+            <button type="button" className="button-ghost" onClick={exportDaily} disabled={!report}><Icon name="download" size={15} /> Daily CSV</button>
+            <button type="button" className="button-ghost" onClick={exportShops} disabled={!report}><Icon name="download" size={15} /> Shops CSV</button>
+            <button type="button" className="button-ghost" onClick={exportSalespeople} disabled={!report}><Icon name="download" size={15} /> Team CSV</button>
+            <button type="button" className="button-ghost" onClick={exportProducts} disabled={!report}><Icon name="download" size={15} /> Products CSV</button>
+            <button type="button" className="button-ghost" onClick={exportPaymentMethods} disabled={!report}><Icon name="download" size={15} /> Payments CSV</button>
+            <button type="button" className="button-ghost" onClick={exportExpenseCategories} disabled={!report}><Icon name="download" size={15} /> Expenses CSV</button>
             <button type="button" className="button-ghost" onClick={exportSummary} disabled={!report}>
               <Icon name="download" size={16} /> Summary CSV
             </button>
