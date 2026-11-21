@@ -31,7 +31,7 @@ async function rpc(name, args = {}) {
   }
 }
 
-async function fetchCursorPages(name, filters = {}, pageSize = 300, arrayKey = null) {
+async function fetchCursorPages(fetchPage, filters = {}, pageSize = 300, arrayKey = null) {
   if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 1000) {
     throw new RangeError('Page size must be between 1 and 1000')
   }
@@ -39,14 +39,14 @@ async function fetchCursorPages(name, filters = {}, pageSize = 300, arrayKey = n
   let cursor = null
   let stock = null
   while (true) {
-    const page = await rpc(name, { ...filters, p_cursor: cursor, p_limit: pageSize })
+    const page = await fetchPage({ ...filters, p_cursor: cursor, p_limit: pageSize })
     const items = arrayKey ? page?.[arrayKey] : page?.items
-    if (!Array.isArray(items)) throw new TypeError(`${name} returned an invalid page`)
+    if (!Array.isArray(items)) throw new TypeError('The paginated business API returned an invalid page')
     if (arrayKey && stock === null) stock = page.stock || []
     rows.push(...items)
     if (!page.has_more) break
     if (!page.next_cursor || page.next_cursor === cursor) {
-      throw new Error(`${name} returned an invalid pagination cursor`)
+      throw new Error('The paginated business API returned an invalid cursor')
     }
     cursor = page.next_cursor
   }
@@ -244,7 +244,7 @@ async function getAuditLog(limit = 200) {
 }
 
 async function getSales({ from = null, to = null, limit = 300 } = {}) {
-  return fetchCursorPages('api_sales_page', { p_from: from, p_to: to }, limit)
+  return fetchCursorPages(args => rpc('api_sales_page', args), { p_from: from, p_to: to }, limit)
 }
 
 async function createSale({ shopId, paymentTerms, lines, clientReference = null }) {
@@ -273,7 +273,7 @@ async function getShopOpenSales(shopId) {
 }
 
 async function getPayments({ from = null, to = null, limit = 300 } = {}) {
-  return fetchCursorPages('api_payments_page', { p_from: from, p_to: to }, limit)
+  return fetchCursorPages(args => rpc('api_payments_page', args), { p_from: from, p_to: to }, limit)
 }
 
 async function recordPayment({
@@ -305,7 +305,7 @@ async function verifyPayment({ paymentId, decision, reason }) {
 }
 
 async function getInventory(limit = 150) {
-  const result = await fetchCursorPages('api_inventory_movements_page', {}, limit, 'movements')
+  const result = await fetchCursorPages(args => rpc('api_inventory_movements_page', args), {}, limit, 'movements')
   return { stock: result.stock || [], movements: result.movements || [] }
 }
 
@@ -328,7 +328,7 @@ async function adjustStock({ variantId, bucket, delta, reason }) {
 }
 
 async function getReturns(limit = 200) {
-  return fetchCursorPages('api_returns_page', {}, limit)
+  return fetchCursorPages(args => rpc('api_returns_page', args), {}, limit)
 }
 
 async function submitReturn({ saleId, reason, lines }) {
@@ -348,7 +348,7 @@ async function reviewReturn({ returnId, decision, reason }) {
 }
 
 async function getExpenses({ from = null, to = null, limit = 300 } = {}) {
-  return fetchCursorPages('api_expenses_page', { p_from: from, p_to: to }, limit)
+  return fetchCursorPages(args => rpc('api_expenses_page', args), { p_from: from, p_to: to }, limit)
 }
 
 async function submitExpense({ expenseDate, category, description, amount, clientReference = null }) {
