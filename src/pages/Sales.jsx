@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
@@ -54,6 +56,8 @@ export default function Sales() {
         .some(value => String(value).toLowerCase().includes(needle))
     })
   }, [sales, tab, query])
+
+  const { page, pageCount, visibleItems: visibleRows, setPage } = usePagedItems(filtered, 25)
 
   const totals = useMemo(() => {
     const confirmed = filtered.filter(sale => sale.status === 'confirmed')
@@ -186,7 +190,7 @@ export default function Sales() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(sale => (
+                {visibleRows.map(sale => (
                   <tr key={sale.id} onClick={() => setDetailId(sale.id)}>
                     <td>
                       <strong>#{sale.sale_number}</strong>
@@ -219,6 +223,7 @@ export default function Sales() {
               </tbody>
             </table>
           </div>
+          <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
         ) : (
           <EmptyState
             icon="sales"
