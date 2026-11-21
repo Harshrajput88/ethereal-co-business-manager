@@ -186,6 +186,7 @@ export default function Returns() {
 
       <section className="card no-pad">
         {filtered.length ? (
+          <>
           <div className="table-wrap">
             <table className="data-table clickable">
               <thead>
@@ -241,6 +242,7 @@ export default function Returns() {
             </table>
           </div>
           <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
+          </>
         ) : (
           <EmptyState
             icon="returns"
