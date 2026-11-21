@@ -33,7 +33,7 @@ export default function Returns() {
   const [saving, setSaving] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  const state = useApiData(() => fetchCompleteList(limit => api.getReturns(limit), 200), [app.version])
+  const state = useApiData(() => api.getReturns(), [app.version])
   const returns = state.data || []
   const detail = detailId ? returns.find(request => request.id === detailId) : null
 
