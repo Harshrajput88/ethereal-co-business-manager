@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
@@ -141,6 +143,8 @@ export default function Payments() {
         .some(value => String(value).toLowerCase().includes(needle))
     })
   }, [payments, tab, query])
+
+  const { page, pageCount, visibleItems: visibleRows, setPage } = usePagedItems(filtered, 25)
 
   function openDetail(payment) {
     setDetailId(payment.id)
@@ -286,7 +290,7 @@ export default function Payments() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(payment => (
+                {visibleRows.map(payment => (
                   <tr key={payment.id} onClick={() => openDetail(payment)}>
                     <td>
                       <strong>{formatDate(payment.received_at)}</strong>
@@ -322,6 +326,7 @@ export default function Payments() {
               </tbody>
             </table>
           </div>
+          <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
         ) : (
           <EmptyState
             icon="payments"
