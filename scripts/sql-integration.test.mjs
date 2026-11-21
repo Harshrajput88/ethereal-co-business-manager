@@ -511,7 +511,7 @@ test('cursor-paged operational RPCs load and return stable page envelopes', asyn
     ['api_payments_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
     ['api_expenses_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
     ['api_returns_page', { p_cursor: null, p_limit: 1 }, 'items'],
-    ['api_inventory_movements_page', { p_cursor: null, p_limit: 1 }, 'items']
+    ['api_inventory_movements_page', { p_cursor: null, p_limit: 1 }, 'movements']
   ]
   for (const [name, args, key] of checks) {
     const placeholders = Object.keys(args).map((_, index) => '$' + (index + 1)).join(',')
