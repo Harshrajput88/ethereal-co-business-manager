@@ -30,7 +30,7 @@ export default function Sales() {
   const [detailId, setDetailId] = useState('')
 
   const state = useApiData(
-    () => fetchCompleteList(limit => api.getSales({ from: from || null, to: to || null, limit }), 300),
+    () => api.getSales({ from: from || null, to: to || null }),
     [app.version, from, to]
   )
   const sales = state.data || []
