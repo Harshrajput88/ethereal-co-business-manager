@@ -244,7 +244,7 @@ async function getAuditLog(limit = 200) {
 }
 
 async function getSales({ from = null, to = null, limit = 300 } = {}) {
-  return fetchCursorPages(args => rpc('api_sales_page', args), { p_from: from, p_to: to }, limit)
+  return fetchCursorPages(({ p_cursor, p_limit }) => rpc('api_sales_page', { p_from: from, p_to: to, p_cursor, p_limit }), {}, limit)
 }
 
 async function createSale({ shopId, paymentTerms, lines, clientReference = null }) {
@@ -273,7 +273,7 @@ async function getShopOpenSales(shopId) {
 }
 
 async function getPayments({ from = null, to = null, limit = 300 } = {}) {
-  return fetchCursorPages(args => rpc('api_payments_page', args), { p_from: from, p_to: to }, limit)
+  return fetchCursorPages(({ p_cursor, p_limit }) => rpc('api_payments_page', { p_from: from, p_to: to, p_cursor, p_limit }), {}, limit)
 }
 
 async function recordPayment({
@@ -305,7 +305,7 @@ async function verifyPayment({ paymentId, decision, reason }) {
 }
 
 async function getInventory(limit = 150) {
-  const result = await fetchCursorPages(args => rpc('api_inventory_movements_page', args), {}, limit, 'movements')
+  const result = await fetchCursorPages(({ p_cursor, p_limit }) => rpc('api_inventory_movements_page', { p_cursor, p_limit }), {}, limit, 'movements')
   return { stock: result.stock || [], movements: result.movements || [] }
 }
 
@@ -328,7 +328,7 @@ async function adjustStock({ variantId, bucket, delta, reason }) {
 }
 
 async function getReturns(limit = 200) {
-  return fetchCursorPages(args => rpc('api_returns_page', args), {}, limit)
+  return fetchCursorPages(({ p_cursor, p_limit }) => rpc('api_returns_page', { p_cursor, p_limit }), {}, limit)
 }
 
 async function submitReturn({ saleId, reason, lines }) {
@@ -348,7 +348,7 @@ async function reviewReturn({ returnId, decision, reason }) {
 }
 
 async function getExpenses({ from = null, to = null, limit = 300 } = {}) {
-  return fetchCursorPages(args => rpc('api_expenses_page', args), { p_from: from, p_to: to }, limit)
+  return fetchCursorPages(({ p_cursor, p_limit }) => rpc('api_expenses_page', { p_from: from, p_to: to, p_cursor, p_limit }), {}, limit)
 }
 
 async function submitExpense({ expenseDate, category, description, amount, clientReference = null }) {
