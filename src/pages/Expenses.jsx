@@ -58,7 +58,7 @@ export default function Expenses() {
   const [error, setError] = useState('')
 
   const state = useApiData(
-    () => fetchCompleteList(limit => api.getExpenses({ from: from || null, to: to || null, limit }), 300),
+    () => api.getExpenses({ from: from || null, to: to || null }),
     [app.version, from, to]
   )
   const expenses = state.data || []
