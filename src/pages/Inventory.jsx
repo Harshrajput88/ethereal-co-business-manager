@@ -337,7 +337,8 @@ export default function Inventory() {
               </tbody>
             </table>
           </div>
-          <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
+          <TablePagination page={page} pageCount={pageCount} total={filteredMovements.length} pageSize={25} onPageChange={setPage} />
+          </>
         ) : (
           <EmptyState
             icon="inventory"
