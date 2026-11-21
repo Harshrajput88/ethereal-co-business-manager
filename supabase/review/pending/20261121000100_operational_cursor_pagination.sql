@@ -22,7 +22,8 @@ SELECT jsonb_build_object('items',COALESCE((SELECT jsonb_agg(jsonb_build_object(
 END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_sales_page(date,date,jsonb,integer) FROM PUBLIC,anon;
-REVOKE ALL ON FUNCTION ON FUNCTION public.api_sales_page(date,date,jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_sales_page(date,date,jsonb,integer) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.api_sales_page(date,date,jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_payments_page(p_from date DEFAULT NULL,p_to date DEFAULT NULL,p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 300)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -46,7 +47,8 @@ FROM public.payment_allocations pa JOIN public.sales s ON s.id=pa.sale_id WHERE 
 END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_payments_page(date,date,jsonb,integer) FROM PUBLIC,anon;
-REVOKE ALL ON FUNCTION ON FUNCTION public.api_payments_page(date,date,jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_payments_page(date,date,jsonb,integer) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.api_payments_page(date,date,jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_returns_page(p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 200)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -69,7 +71,8 @@ FROM public.return_lines rl JOIN public.sale_lines sl ON sl.id=rl.sale_line_id W
 END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_returns_page(jsonb,integer) FROM PUBLIC,anon;
-REVOKE ALL ON FUNCTION ON FUNCTION public.api_returns_page(jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_returns_page(jsonb,integer) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.api_returns_page(jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_expenses_page(p_from date DEFAULT NULL,p_to date DEFAULT NULL,p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 300)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -91,7 +94,8 @@ SELECT jsonb_build_object('items',COALESCE((SELECT jsonb_agg(jsonb_build_object(
 END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) FROM PUBLIC,anon;
-REVOKE ALL ON FUNCTION ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.api_inventory_movements_page(p_cursor jsonb DEFAULT NULL,p_limit integer DEFAULT 150)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = '' AS $function$
@@ -119,4 +123,5 @@ BEGIN
 END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_inventory_movements_page(jsonb,integer) FROM PUBLIC,anon;
-REVOKE ALL ON FUNCTION ON FUNCTION public.api_inventory_movements_page(jsonb,integer) TO authenticated;
+REVOKE ALL ON FUNCTION public.api_inventory_movements_page(jsonb,integer) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.api_inventory_movements_page(jsonb,integer) TO authenticated;
