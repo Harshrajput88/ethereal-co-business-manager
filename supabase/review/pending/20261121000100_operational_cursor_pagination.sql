@@ -19,7 +19,6 @@ SELECT jsonb_build_object('items',COALESCE((SELECT jsonb_agg(jsonb_build_object(
 ) ORDER BY s.created_at DESC,s.id DESC) FROM kept s JOIN public.shops sh ON sh.id=s.shop_id JOIN public.profiles pr ON pr.id=s.salesperson_id),'[]'::jsonb),
 'has_more',(SELECT count(*)>LEAST(GREATEST(COALESCE(p_limit,300),1),1000) FROM page),
 'next_cursor',(SELECT jsonb_build_object('created_at',s.created_at,'id',s.id) FROM kept s ORDER BY s.created_at ASC,s.id ASC LIMIT 1))
-END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_sales_page(date,date,jsonb,integer) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.api_sales_page(date,date,jsonb,integer) FROM authenticated;
@@ -44,7 +43,6 @@ FROM public.payment_allocations pa JOIN public.sales s ON s.id=pa.sale_id WHERE 
 ) ORDER BY p.created_at DESC,p.id DESC) FROM kept p JOIN public.shops sh ON sh.id=p.shop_id JOIN public.profiles pr ON pr.id=p.recorded_by),'[]'::jsonb),
 'has_more',(SELECT count(*)>LEAST(GREATEST(COALESCE(p_limit,300),1),1000) FROM page),
 'next_cursor',(SELECT jsonb_build_object('created_at',p.created_at,'id',p.id) FROM kept p ORDER BY p.created_at ASC,p.id ASC LIMIT 1))
-END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_payments_page(date,date,jsonb,integer) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.api_payments_page(date,date,jsonb,integer) FROM authenticated;
@@ -68,7 +66,6 @@ FROM public.return_lines rl JOIN public.sale_lines sl ON sl.id=rl.sale_line_id W
 ) ORDER BY r.submitted_at DESC,r.id DESC) FROM kept r JOIN public.sales s ON s.id=r.sale_id JOIN public.shops sh ON sh.id=r.shop_id JOIN public.profiles pr ON pr.id=r.submitted_by),'[]'::jsonb),
 'has_more',(SELECT count(*)>LEAST(GREATEST(COALESCE(p_limit,200),1),1000) FROM page),
 'next_cursor',(SELECT jsonb_build_object('submitted_at',r.submitted_at,'id',r.id) FROM kept r ORDER BY r.submitted_at ASC,r.id ASC LIMIT 1))
-END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_returns_page(jsonb,integer) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.api_returns_page(jsonb,integer) FROM authenticated;
@@ -91,7 +88,6 @@ SELECT jsonb_build_object('items',COALESCE((SELECT jsonb_agg(jsonb_build_object(
 ) ORDER BY e.expense_date DESC,e.created_at DESC,e.id DESC) FROM kept e JOIN public.profiles pr ON pr.id=e.submitted_by),'[]'::jsonb),
 'has_more',(SELECT count(*)>LEAST(GREATEST(COALESCE(p_limit,300),1),1000) FROM page),
 'next_cursor',(SELECT jsonb_build_object('expense_date',e.expense_date,'created_at',e.created_at,'id',e.id) FROM kept e ORDER BY e.expense_date ASC,e.created_at ASC,e.id ASC LIMIT 1))
-END;
 $function$;
 REVOKE ALL ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.api_expenses_page(date,date,jsonb,integer) FROM authenticated;
