@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { formatDate, formatMoney, titleCase } from '../lib/format'
 import Icon from '../components/Icon'
 import {
@@ -86,6 +88,8 @@ export default function Shops() {
         .some(value => String(value).toLowerCase().includes(needle))
     })
   }, [shops, tab, query])
+
+  const pagination = usePagedItems(filtered, 24)
 
   useEffect(() => {
     if (!reviewShop && !assignShop) return
@@ -275,7 +279,7 @@ export default function Shops() {
       )}
 
       <div className="shop-grid">
-        {filtered.map(shop => {
+        {pagination.visibleItems.map(shop => {
           const address = [
             shop.address_line1,
             shop.address_line2,
@@ -395,6 +399,7 @@ export default function Shops() {
           )
         })}
       </div>
+      <TablePagination page={pagination.page} pageCount={pagination.pageCount} total={filtered.length} pageSize={24} onPageChange={pagination.setPage} />
 
       <Modal
         open={addOpen}
