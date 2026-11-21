@@ -101,7 +101,7 @@ export default function Payments() {
   const [receiptOpen, setReceiptOpen] = useState(false)
 
   const state = useApiData(
-    () => fetchCompleteList(limit => api.getPayments({ from: from || null, to: to || null, limit }), 300),
+    () => api.getPayments({ from: from || null, to: to || null }),
     [app.version, from, to]
   )
   const payments = state.data || []
