@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { formatDate, formatDateTime, titleCase } from '../lib/format'
 import Icon from '../components/Icon'
 import {
@@ -61,6 +63,8 @@ export default function Team() {
         .some(value => String(value).toLowerCase().includes(needle))
     })
   }, [team, tab, query])
+
+  const pagination = usePagedItems(filtered, 25)
 
   function askStatus(person, status) {
     setAction({ type: 'status', person, value: status })
@@ -177,7 +181,7 @@ export default function Team() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(person => {
+                {pagination.visibleItems.map(person => {
                   const isSelf = person.id === app.profile?.id
                   return (
                     <tr key={person.id}>
@@ -277,6 +281,7 @@ export default function Team() {
             description={query ? 'Try another search.' : 'New registrations will appear here.'}
           />
         )}
+        <TablePagination page={pagination.page} pageCount={pagination.pageCount} total={filtered.length} pageSize={25} onPageChange={pagination.setPage} />
       </section>
 
       <section className="card no-pad">

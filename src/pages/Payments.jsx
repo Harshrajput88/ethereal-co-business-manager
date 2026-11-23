@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
@@ -100,7 +102,7 @@ export default function Payments() {
   const [receiptOpen, setReceiptOpen] = useState(false)
 
   const state = useApiData(
-    () => api.getPayments({ from: from || null, to: to || null, limit: 300 }),
+    () => api.getPayments({ from: from || null, to: to || null }),
     [app.version, from, to]
   )
   const payments = state.data || []
@@ -142,6 +144,8 @@ export default function Payments() {
     })
   }, [payments, tab, query])
 
+  const { page, pageCount, visibleItems: visibleRows, setPage } = usePagedItems(filtered, 25)
+
   function openDetail(payment) {
     setDetailId(payment.id)
     setDecision('approve')
@@ -173,7 +177,9 @@ export default function Payments() {
       setReason('')
       state.reload({ quiet: true })
     } catch (err) {
-      setActionError(err.message)
+      setActionError(action === 'approve'
+        ? `Payment was not verified and remains submitted with its original allocation. Do not retry verification unchanged. Reject this submission with a clear reason, then record the payment again using the current outstanding invoices. Server details: ${err.message}`
+        : err.message)
     } finally {
       setSaving(false)
     }
@@ -268,6 +274,7 @@ export default function Payments() {
 
       <section className="card no-pad">
         {filtered.length ? (
+          <>
           <div className="table-wrap">
             <table className="data-table clickable">
               <thead>
@@ -284,7 +291,7 @@ export default function Payments() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(payment => (
+                {visibleRows.map(payment => (
                   <tr key={payment.id} onClick={() => openDetail(payment)}>
                     <td>
                       <strong>{formatDate(payment.received_at)}</strong>
@@ -320,6 +327,8 @@ export default function Payments() {
               </tbody>
             </table>
           </div>
+          <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
+          </>
         ) : (
           <EmptyState
             icon="payments"

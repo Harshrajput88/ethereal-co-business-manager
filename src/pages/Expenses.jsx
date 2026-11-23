@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
@@ -57,7 +59,7 @@ export default function Expenses() {
   const [error, setError] = useState('')
 
   const state = useApiData(
-    () => api.getExpenses({ from: from || null, to: to || null, limit: 300 }),
+    () => api.getExpenses({ from: from || null, to: to || null }),
     [app.version, from, to]
   )
   const expenses = state.data || []
@@ -90,6 +92,8 @@ export default function Expenses() {
         .some(value => String(value).toLowerCase().includes(needle))
     })
   }, [expenses, tab, query])
+
+  const { page, pageCount, visibleItems: visibleRows, setPage } = usePagedItems(filtered, 25)
 
   function openAdd() {
     setForm(emptyForm())
@@ -290,6 +294,7 @@ export default function Expenses() {
 
       <section className="card no-pad">
         {filtered.length ? (
+          <>
           <div className="table-wrap">
             <table className="data-table clickable">
               <thead>
@@ -305,7 +310,7 @@ export default function Expenses() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(expense => (
+                {visibleRows.map(expense => (
                   <tr key={expense.id} onClick={() => openDetail(expense)}>
                     <td>{formatDate(expense.expense_date)}</td>
                     <td>
@@ -326,6 +331,8 @@ export default function Expenses() {
               </tbody>
             </table>
           </div>
+          <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
+          </>
         ) : (
           <EmptyState
             icon="expenses"

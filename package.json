@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node --test src/lib/*.test.js scripts/backend.test.mjs scripts/sql-integration.test.mjs scripts/sql-remediation.test.mjs scripts/sql-owner-bootstrap.test.mjs scripts/rpc-contract.test.mjs scripts/integration-status.test.mjs scripts/backend-mode.test.mjs scripts/auth-events.test.mjs",
+    "test": "node --test src/lib/*.test.js scripts/backend.test.mjs scripts/sql-integration.test.mjs scripts/sql-remediation.test.mjs scripts/sql-owner-bootstrap.test.mjs scripts/fetch-complete-list.test.mjs scripts/rpc-contract.test.mjs scripts/integration-status.test.mjs scripts/backend-mode.test.mjs scripts/auth-events.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

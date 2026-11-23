@@ -452,3 +452,52 @@ The rehearsal bootstrap is now tracked at `scripts/phase3-bootstrap.sql`. The wo
 **The PostgreSQL concurrency gate is now passed for the nine-file package.** This supersedes the older 62/62 result, which covered only migrations 001–007.
 
 **Staging and production are still NO-GO.** Remaining gates are independent security review of the exact nine migration hashes, actual Supabase Auth/JWT/PostgREST/RLS verification, and a verified backup/restore rehearsal. The local stand-in cannot replace those platform checks. No remote database was contacted or modified by this CI run.
+
+
+---
+
+## 11. Implementation branch verification — 20 November 2026
+
+This addendum records the current implementation branch checks. Sections 1–9 above
+are a historical snapshot of the original seven-migration Phase 3 exercise; they
+must not be read as the current release verdict. Section 10 records the nine-migration
+database rehearsal from 19 November. The following is the newer GitHub Actions run
+for the pagination and operational-history implementation.
+
+**PASS — GitHub Actions CI run #114**
+
+- Branch: `fix/audit-financial-pagination-2026-11-20`
+- Commit: `eb65ca60497113c30b51b6dda757c3513085d8b7`
+- Workflow: [#114 — implementation checks](https://github.com/Harshrajput88/ethereal-co-business-manager/actions/runs/44764997329)
+- Automated Node tests: **58 passed, 0 failed**
+- PostgreSQL 17.12 concurrency rehearsal: **73/73 checks passed**
+- Exact nine-file migration manifest and frozen-hash preflight: **passed**
+- Lint: **0 errors, 42 warnings**
+- Production build: **passed**
+- Rehearsal evidence artifact: `ethereal-postgresql-17-rehearsal`
+
+### Application changes included in the checked commit
+
+- Financial reports retrieve sales, payments and expenses beyond the former
+  1,000-row client request limit.
+- Sales, payment and expense history retrieve beyond the former 300-row limit.
+- Return and inventory movement history retrieve beyond the former 200-row limit.
+- Inventory response handling preserves the stock summary while checking the
+  completeness of its nested movement list.
+- Payment verification failure messaging explains that a stale allocation leaves
+  the payment submitted and unverified. The operator must reject that submission
+  with a reason and record the payment again using current outstanding invoices;
+  simply retrying the unchanged allocation is not a valid recovery.
+
+The complete-list helper uses the existing limit-only RPC contract and increases
+the requested limit until a short page is returned. This prevents the current
+silent truncation defect but is not true pagination. Large periods can still
+produce large responses. A scalable follow-up should use reviewed server-side
+aggregates for financial reporting and deterministic cursor/offset pagination
+for operational history.
+
+### Release decision remains unchanged
+
+**Staging and production remain NO-GO.** CI success is not independent security
+approval and does not prove Supabase Auth/JWT/PostgREST/RLS or platform event-trigger
+behavior. Do not execute remote migrations or deploy based on this report.

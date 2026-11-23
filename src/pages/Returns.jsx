@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { usePagedItems } from '../hooks/usePagedItems'
+import TablePagination from '../components/TablePagination'
 import { api } from '../lib/api'
 import { useApp } from '../AppContext'
 import { useApiData } from '../hooks/useApiData'
@@ -32,7 +34,7 @@ export default function Returns() {
   const [saving, setSaving] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  const state = useApiData(() => api.getReturns(200), [app.version])
+  const state = useApiData(() => api.getReturns(), [app.version])
   const returns = state.data || []
   const detail = detailId ? returns.find(request => request.id === detailId) : null
 
@@ -70,6 +72,8 @@ export default function Returns() {
         .some(value => String(value).toLowerCase().includes(needle))
     })
   }, [returns, tab, query])
+
+  const { page, pageCount, visibleItems: visibleRows, setPage } = usePagedItems(filtered, 25)
 
   function openDetail(request) {
     setDetailId(request.id)
@@ -182,6 +186,7 @@ export default function Returns() {
 
       <section className="card no-pad">
         {filtered.length ? (
+          <>
           <div className="table-wrap">
             <table className="data-table clickable">
               <thead>
@@ -198,7 +203,7 @@ export default function Returns() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(request => {
+                {visibleRows.map(request => {
                   const cartons = request.lines.reduce(
                     (sum, line) => sum + Number(line.approved_cartons || line.cartons || 0),
                     0
@@ -236,6 +241,8 @@ export default function Returns() {
               </tbody>
             </table>
           </div>
+          <TablePagination page={page} pageCount={pageCount} total={filtered.length} pageSize={25} onPageChange={setPage} />
+          </>
         ) : (
           <EmptyState
             icon="returns"

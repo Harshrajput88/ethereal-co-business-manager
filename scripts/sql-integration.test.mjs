@@ -89,6 +89,8 @@ before(async () => {
   for (const file of migrationFiles) {
     await db.exec(readFileSync(join(root, 'supabase', 'migrations', file), 'utf8'))
   }
+  await db.exec(readFileSync(join(root, 'supabase', 'review', 'pending', '20261120000100_server_side_financial_report.sql'), 'utf8'))
+  await db.exec(readFileSync(join(root, 'supabase', 'review', 'pending', '20261121000100_operational_cursor_pagination.sql'), 'utf8'))
 
   await db.query(
     `INSERT INTO auth.users (id, email, raw_user_meta_data)
@@ -375,6 +377,30 @@ test('expenses require independent approval and can be settled', async () => {
   )
 })
 
+
+test('server-side financial report aggregates complete data and respects its date window', async () => {
+  const result = row(await asUser(ids.owner, 'SELECT public.api_financial_report(NULL, NULL) AS r')).r
+  assert.equal(typeof result.revenue, 'number')
+  assert.equal(typeof result.collections, 'number')
+  assert.equal(typeof result.outstanding, 'number')
+  assert.equal(typeof result.expenses, 'number')
+  assert.ok(Array.isArray(result.byShop))
+  assert.ok(Array.isArray(result.bySalesperson))
+  assert.ok(Array.isArray(result.daily))
+  assert.ok(Array.isArray(result.methods))
+  assert.ok(Array.isArray(result.categories))
+  assert.ok(Array.isArray(result.products))
+
+  const visibleSales = row(await asUser(ids.owner, 'SELECT public.api_sales_list(NULL, NULL, 1000) AS r')).r
+    .filter(sale => sale.status === 'confirmed')
+  assert.equal(result.transactions, visibleSales.length)
+  assert.equal(Number(result.revenue), visibleSales.reduce((sum, sale) => sum + Number(sale.grand_total), 0))
+
+  const filtered = row(await asUser(ids.owner,
+    'SELECT public.api_financial_report(current_date, current_date) AS r')).r
+  assert.ok(filtered.transactions <= result.transactions)
+})
+
 test('salespeople cannot sell to unassigned shops or bypass the API', async () => {
   await expectFailure(
     () => asUser(ids.sales2, 'SELECT public.api_create_sale($1, $2, $3::jsonb)',
@@ -476,4 +502,25 @@ test('dashboard and reports reflect verified money only', async () => {
 
   const sales = row(await asUser(ids.owner, 'SELECT public.api_sales_list() AS r')).r
   assert.ok(sales.every(s => s.invoice_number || s.status !== 'confirmed'))
+})
+
+
+test('cursor-paged operational RPCs load and return stable page envelopes', async () => {
+  const checks = [
+    ['api_sales_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_payments_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_expenses_page', { p_from: null, p_to: null, p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_returns_page', { p_cursor: null, p_limit: 1 }, 'items'],
+    ['api_inventory_movements_page', { p_cursor: null, p_limit: 1 }, 'movements']
+  ]
+  for (const [name, args, key] of checks) {
+    const placeholders = Object.keys(args).map((_, index) => '$' + (index + 1)).join(',')
+    const result = row(await asUser(ids.sales1, `SELECT public.${name}(${placeholders}) AS page`, Object.values(args))).page
+    assert.ok(Array.isArray(result[key]), name + ' returns an items array')
+    assert.equal(typeof result.has_more, 'boolean', name + ' returns has_more')
+    if (result.has_more) assert.ok(result.next_cursor, name + ' returns next_cursor when more rows exist')
+  }
+  const inventory = row(await asUser(ids.sales1,
+    'SELECT public.api_inventory_movements_page($1,$2) AS page', [null, 1])).page
+  assert.ok(Array.isArray(inventory.stock), 'inventory page preserves stock summary')
 })
