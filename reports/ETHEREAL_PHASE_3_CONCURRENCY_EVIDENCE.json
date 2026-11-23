@@ -1,0 +1,782 @@
+{
+  "generatedAt": "2026-11-18T10:21:26.910Z",
+  "database": {
+    "host": "127.0.0.1",
+    "port": "55432",
+    "name": "ethereal_phase3_test",
+    "migrations": [
+      "20261118000100_business_schema.sql",
+      "20261118000200_business_core_rpcs.sql",
+      "20261118000300_business_sales_rpcs.sql",
+      "20261118000400_business_payment_rpcs.sql",
+      "20261118000500_business_inventory_return_expense_rpcs.sql",
+      "20261118000600_business_dashboard_team_rpcs.sql",
+      "20261118000700_business_security_integrity_remediation.sql"
+    ],
+    "hashes": {
+      "20261118000100_business_schema.sql": "4AA1BB4A5BCB723D67DE0D2B633D5D0CDA1BB835368E105E48E418BF8F3B50FB",
+      "20261118000200_business_core_rpcs.sql": "2F23D236278C120F3172FA6442FB390874AC1BC144E3948001D6BB910BAE9FF5",
+      "20261118000300_business_sales_rpcs.sql": "A9C619F438A06423CDC9182EFCD329EC98EBE242D836D8428D23DF389F386CCA",
+      "20261118000400_business_payment_rpcs.sql": "89401F07102D1A08ABB80C27A8FBB4F05CD29EAE1A3DAB52578D7E1424A05144",
+      "20261118000500_business_inventory_return_expense_rpcs.sql": "F438A12D4E732053B0ADAF19B2BB9E64AF8DB5E974020673456BC0954CD86626",
+      "20261118000600_business_dashboard_team_rpcs.sql": "05022AF79B4CD7B3D517DA848C2B29294B5FDC50AAAE9FCEBDF5E7A1DC7E6051",
+      "20261118000700_business_security_integrity_remediation.sql": "16D30D467602C9CB909511424DC0330065F920EE6B9DA4D269BEB13F12A3ABC6"
+    },
+    "version": "17.5"
+  },
+  "identity": {
+    "version": "17.5",
+    "db": "ethereal_phase3_test",
+    "host": "127.0.0.1",
+    "port": "55432"
+  },
+  "scenarioCount": 10,
+  "checkCount": 62,
+  "passed": 62,
+  "failed": 0,
+  "failures": [],
+  "results": [
+    {
+      "name": "1. Concurrent first-owner claims",
+      "checks": [
+        {
+          "name": "A claim committed",
+          "passed": true
+        },
+        {
+          "name": "B claim rejected",
+          "passed": true
+        },
+        {
+          "name": "B waited behind the owner advisory lock (>=800ms)",
+          "passed": true,
+          "detail": "1446ms"
+        },
+        {
+          "name": "second session observed waiting on a lock",
+          "passed": true,
+          "detail": "[{\"pid\":25320,\"state\":\"active\",\"wait\":\"Lock/advisory\",\"blocked_by\":[29160],\"query\":\"SELECT public.api_claim_owner();\"},{\"pid\":29160,\"state\":\"active\",\"wait\":\"Timeout/PgSleep\",\"blocked_by\":[],\"query\":\"SELECT pg_sleep(1.6);\"}]"
+        },
+        {
+          "name": "exactly one approved owner exists",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "no second owner row was created",
+          "passed": true,
+          "detail": "[{\"role\":\"owner\",\"status\":\"approved\",\"n\":1},{\"role\":\"salesperson\",\"status\":\"pending\",\"n\":1}]"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1849,
+            "error": ""
+          },
+          "b": {
+            "exit": 3,
+            "durationMs": 1446,
+            "error": "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          },
+          "overlapMs": 1441,
+          "snapshot": {
+            "advisory_locks": 2,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 25320,
+                "state": "active",
+                "wait": "Lock/advisory",
+                "blocked_by": [
+                  29160
+                ],
+                "query": "SELECT public.api_claim_owner();"
+              },
+              {
+                "pid": 29160,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.6);"
+              }
+            ]
+          }
+        },
+        "state": [
+          {
+            "role": "owner",
+            "status": "approved",
+            "n": 1
+          },
+          {
+            "role": "salesperson",
+            "status": "pending",
+            "n": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "2. Concurrent last-owner demotion",
+      "checks": [
+        {
+          "name": "setup has two approved owners",
+          "passed": true,
+          "detail": "2"
+        },
+        {
+          "name": "exactly one demotion committed",
+          "passed": true,
+          "detail": "A=0 B=3"
+        },
+        {
+          "name": "loser rejected with last-owner guard",
+          "passed": true
+        },
+        {
+          "name": "loser waited behind the membership advisory lock",
+          "passed": true
+        },
+        {
+          "name": "exactly one approved owner remains",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "state restored to one owner",
+          "passed": true,
+          "detail": "1"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1723,
+            "error": ""
+          },
+          "b": {
+            "exit": 3,
+            "durationMs": 1313,
+            "error": "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          },
+          "overlapMs": 1312,
+          "snapshot": {
+            "advisory_locks": 2,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 14164,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.6);"
+              },
+              {
+                "pid": 7356,
+                "state": "active",
+                "wait": "Lock/advisory",
+                "blocked_by": [
+                  14164
+                ],
+                "query": "SELECT public.api_set_employee_role('22222222-2222-4222-8222-222222222222', 'admin');"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "3. Concurrent payment verification",
+      "checks": [
+        {
+          "name": "exactly one verification committed",
+          "passed": true,
+          "detail": "[{\"id\":\"ce62398a-29e9-4bb0-9f3b-91bb7e79e915\",\"status\":\"submitted\"},{\"id\":\"f7da4dbc-d4d9-4011-a328-0b79b1d0601a\",\"status\":\"verified\"}]"
+        },
+        {
+          "name": "loser reports a changed sale balance",
+          "passed": true
+        },
+        {
+          "name": "loser waited behind the sale row lock",
+          "passed": true
+        },
+        {
+          "name": "sale balance is exactly zero",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "verified allocation equals the sale total exactly once",
+          "passed": true,
+          "detail": "240"
+        },
+        {
+          "name": "ledger credit posted exactly once",
+          "passed": true,
+          "detail": "240"
+        },
+        {
+          "name": "losing payment stayed unverified with its tentative allocation",
+          "passed": true,
+          "detail": "240"
+        },
+        {
+          "name": "exactly one receipt exists",
+          "passed": true,
+          "detail": "1"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1793,
+            "error": ""
+          },
+          "b": {
+            "exit": 3,
+            "durationMs": 1379,
+            "error": "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          },
+          "overlapMs": 1369,
+          "snapshot": {
+            "advisory_locks": 0,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 24072,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.6);"
+              },
+              {
+                "pid": 25412,
+                "state": "active",
+                "wait": "Lock/transactionid",
+                "blocked_by": [
+                  24072
+                ],
+                "query": "SELECT public.api_verify_payment('ce62398a-29e9-4bb0-9f3b-91bb7e79e915', 'verify', NULL);"
+              }
+            ]
+          }
+        },
+        "statuses": [
+          {
+            "id": "ce62398a-29e9-4bb0-9f3b-91bb7e79e915",
+            "status": "submitted"
+          },
+          {
+            "id": "f7da4dbc-d4d9-4011-a328-0b79b1d0601a",
+            "status": "verified"
+          }
+        ],
+        "balance": 0,
+        "verifiedAllocated": 240,
+        "tentativeAllocated": 240,
+        "ledgerCredits": 240,
+        "receipts": 1
+      }
+    },
+    {
+      "name": "4. Concurrent return approvals",
+      "checks": [
+        {
+          "name": "exactly one approval committed",
+          "passed": true,
+          "detail": "[{\"id\":\"1ee5e219-dfa3-4447-96c2-a7ae72d1d9b3\",\"status\":\"submitted\"},{\"id\":\"642a4a41-8711-4b35-830c-f3b51b5ebdd6\",\"status\":\"approved\"}]"
+        },
+        {
+          "name": "loser reports excessive return quantity",
+          "passed": true
+        },
+        {
+          "name": "loser waited behind the sale-line advisory lock",
+          "passed": true
+        },
+        {
+          "name": "approved cartons equal one, never two",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "exactly one return stock movement exists",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "exactly one return credit exists",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "stock increased by exactly one carton",
+          "passed": true,
+          "detail": "98 -> 99"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1771,
+            "error": ""
+          },
+          "b": {
+            "exit": 3,
+            "durationMs": 1364,
+            "error": "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          },
+          "overlapMs": 1354,
+          "snapshot": {
+            "advisory_locks": 3,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 28460,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.6);"
+              },
+              {
+                "pid": 29056,
+                "state": "active",
+                "wait": "Lock/advisory",
+                "blocked_by": [
+                  28460
+                ],
+                "query": "SELECT public.api_review_return('1ee5e219-dfa3-4447-96c2-a7ae72d1d9b3', 'approve', NULL);"
+              }
+            ]
+          }
+        },
+        "statuses": [
+          {
+            "id": "1ee5e219-dfa3-4447-96c2-a7ae72d1d9b3",
+            "status": "submitted"
+          },
+          {
+            "id": "642a4a41-8711-4b35-830c-f3b51b5ebdd6",
+            "status": "approved"
+          }
+        ],
+        "approvedCartons": 1,
+        "movements": 1,
+        "credits": 1,
+        "stockBefore": 98,
+        "stockAfter": 99
+      }
+    },
+    {
+      "name": "5a. Concurrent receipt and sale",
+      "checks": [
+        {
+          "name": "receipt committed",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "sale committed",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "both serialized without deadlock or lost update",
+          "passed": true
+        },
+        {
+          "name": "final stock is 1 + 5 - 1 = 5",
+          "passed": true,
+          "detail": "5"
+        },
+        {
+          "name": "exactly one sale was created",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "exactly three movements (opening, receipt, sale)",
+          "passed": true,
+          "detail": "3"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1745,
+            "error": ""
+          },
+          "b": {
+            "exit": 0,
+            "durationMs": 1405,
+            "error": ""
+          },
+          "overlapMs": 1335,
+          "snapshot": {
+            "advisory_locks": 2,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 29076,
+                "state": "active",
+                "wait": "Lock/advisory",
+                "blocked_by": [
+                  26248
+                ],
+                "query": "SELECT public.api_create_sale('20d500f4-93ae-44dc-9bcc-44ea56cf7caa', 'cash', '[{\"variant_id\":\"e85f5534-47b8-4"
+              },
+              {
+                "pid": 26248,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.6);"
+              }
+            ]
+          }
+        },
+        "stock": 5,
+        "movements": 3,
+        "sales": 1
+      }
+    },
+    {
+      "name": "5b. Concurrent oversell attempt",
+      "checks": [
+        {
+          "name": "exactly one sale committed",
+          "passed": true,
+          "detail": "A=0 B=3"
+        },
+        {
+          "name": "loser rejected for insufficient stock",
+          "passed": true
+        },
+        {
+          "name": "loser waited behind the variant advisory lock",
+          "passed": true
+        },
+        {
+          "name": "stock never went negative",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "failed sale left no partial rows",
+          "passed": true,
+          "detail": "sales=1 movements=2"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1961,
+            "error": ""
+          },
+          "b": {
+            "exit": 3,
+            "durationMs": 1553,
+            "error": "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          },
+          "overlapMs": 1540,
+          "snapshot": {
+            "advisory_locks": 2,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 8256,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.6);"
+              },
+              {
+                "pid": 4216,
+                "state": "active",
+                "wait": "Lock/advisory",
+                "blocked_by": [
+                  8256
+                ],
+                "query": "SELECT public.api_create_sale('20d500f4-93ae-44dc-9bcc-44ea56cf7caa', 'cash', '[{\"variant_id\":\"41bf9236-670b-4"
+              }
+            ]
+          }
+        },
+        "stock": 0,
+        "saleCount": 1,
+        "movements": 2
+      }
+    },
+    {
+      "name": "6a. Duplicate sale idempotency",
+      "checks": [
+        {
+          "name": "exactly one sale row exists",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "loser was blocked then rejected by the unique index",
+          "passed": true
+        },
+        {
+          "name": "loser waited on the index (>=700ms)",
+          "passed": true,
+          "detail": "1313ms"
+        },
+        {
+          "name": "only one stock movement was written",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "documented retry is idempotent",
+          "passed": true,
+          "detail": "{\"status\":\"confirmed\",\"sale_id\":\"046d5bf4-1c51-4954-be5a-aa583e59d033\",\"idempotent\":true,\"grand_total\":300,\"sale_number\":6}"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1727,
+            "error": ""
+          },
+          "b": {
+            "exit": 3,
+            "durationMs": 1313,
+            "error": "LOCATION:  _bt_check_unique, nbtinsert.c:673"
+          },
+          "overlapMs": 1313,
+          "snapshot": {
+            "advisory_locks": 1,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 30052,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.5);"
+              },
+              {
+                "pid": 30684,
+                "state": "active",
+                "wait": "Lock/transactionid",
+                "blocked_by": [
+                  30052
+                ],
+                "query": "SELECT public.api_create_sale('20d500f4-93ae-44dc-9bcc-44ea56cf7caa', 'cash', '[{\"variant_id\":\"90952852-cc6b-4"
+              }
+            ]
+          }
+        },
+        "count": 1,
+        "movements": 1,
+        "replay": {
+          "status": "confirmed",
+          "sale_id": "046d5bf4-1c51-4954-be5a-aa583e59d033",
+          "idempotent": true,
+          "grand_total": 300,
+          "sale_number": 6
+        }
+      }
+    },
+    {
+      "name": "6b. Duplicate payment idempotency",
+      "checks": [
+        {
+          "name": "exactly one payment row exists",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "loser rejected by the unique payment reference",
+          "passed": true
+        },
+        {
+          "name": "loser waited on the index (>=700ms)",
+          "passed": true,
+          "detail": "1229ms"
+        },
+        {
+          "name": "documented retry is idempotent",
+          "passed": true,
+          "detail": "{\"status\":\"submitted\",\"idempotent\":true,\"payment_id\":\"55faef90-8e87-4020-9da2-9baec619a5b3\"}"
+        }
+      ],
+      "evidence": {
+        "race": {
+          "a": {
+            "exit": 0,
+            "durationMs": 1645,
+            "error": ""
+          },
+          "b": {
+            "exit": 3,
+            "durationMs": 1229,
+            "error": "LOCATION:  _bt_check_unique, nbtinsert.c:673"
+          },
+          "overlapMs": 1229,
+          "snapshot": {
+            "advisory_locks": 0,
+            "lock_waiters": 1,
+            "sessions": [
+              {
+                "pid": 30236,
+                "state": "active",
+                "wait": "Timeout/PgSleep",
+                "blocked_by": [],
+                "query": "SELECT pg_sleep(1.5);"
+              },
+              {
+                "pid": 8616,
+                "state": "active",
+                "wait": "Lock/transactionid",
+                "blocked_by": [
+                  30236
+                ],
+                "query": "SELECT public.api_record_payment('20d500f4-93ae-44dc-9bcc-44ea56cf7caa', 'cash', 25, now(), NULL, '[]'::jsonb,"
+              }
+            ]
+          }
+        },
+        "count": 1,
+        "replay": {
+          "status": "submitted",
+          "idempotent": true,
+          "payment_id": "55faef90-8e87-4020-9da2-9baec619a5b3"
+        }
+      }
+    },
+    {
+      "name": "7. Rollback releases advisory lock",
+      "checks": [
+        {
+          "name": "lock holder aborted and rolled back",
+          "passed": true
+        },
+        {
+          "name": "waiting sale proceeded after rollback",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "waiting sale was actually blocked (>=500ms)",
+          "passed": true,
+          "detail": "1062ms"
+        },
+        {
+          "name": "sales count is unchanged by the aborted holder",
+          "passed": true
+        },
+        {
+          "name": "no advisory lock leaked after rollback",
+          "passed": true
+        }
+      ],
+      "evidence": {
+        "a": 1316,
+        "b": 1062,
+        "snapshot": {
+          "advisory_locks": 2,
+          "lock_waiters": 1,
+          "sessions": [
+            {
+              "pid": 25656,
+              "state": "active",
+              "wait": "Timeout/PgSleep",
+              "blocked_by": [],
+              "query": "SELECT pg_sleep(1.2);"
+            },
+            {
+              "pid": 29828,
+              "state": "active",
+              "wait": "Lock/advisory",
+              "blocked_by": [
+                25656
+              ],
+              "query": "SELECT public.api_create_sale('20d500f4-93ae-44dc-9bcc-44ea56cf7caa', 'cash', '[{\"variant_id\":\"90952852-cc6b-4"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. Final integrity audit",
+      "checks": [
+        {
+          "name": "one approved owner",
+          "passed": true,
+          "detail": "1"
+        },
+        {
+          "name": "no negative sale balances",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no sale is over-allocated by verified payments",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no negative stock",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no duplicate sale references",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no duplicate payment references",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no duplicate return lines",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no over-returned sale lines",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no advisory locks remain",
+          "passed": true,
+          "detail": "0"
+        },
+        {
+          "name": "no idle-in-transaction backend remains",
+          "passed": true,
+          "detail": "0"
+        }
+      ],
+      "evidence": {
+        "approved_owners": 1,
+        "negative_balances": 0,
+        "over_allocated_sales": 0,
+        "pending_allocation_overage": 0,
+        "negative_stock_variants": 0,
+        "duplicate_sale_refs": 0,
+        "duplicate_payment_refs": 0,
+        "duplicate_return_lines": 0,
+        "over_returned_lines": 0,
+        "advisory_locks": 0,
+        "idle_in_transaction": 0
+      }
+    }
+  ]
+}

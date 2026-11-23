@@ -4,10 +4,11 @@ A React + Vite web dashboard for managing an Ethereal Co. bottled-water business
 It is designed to be used by a business **owner** and approved **salespeople**,
 with Supabase providing authentication and the (intended) database backend.
 
-> **Status: early-stage / partially built.** The application currently includes a
-> working login screen, registration, an owner approval workflow, and a styled
-> dashboard shell. Most business features (sales, stock, pricing, payments,
-> reports) are still placeholders. See [Current implementation status](#current-implementation-status).
+> **Status: functional MVP implementation; cloud deployment remains gated.** The
+> app includes role-aware authentication, business workflows, a local demo
+> backend, additive SQL migrations, and PWA support. Run the local demo with
+> `?demo=1`. Cloud workflows require the migrations to be reviewed and deployed
+> to an isolated Supabase project; no remote project is contacted by the tests.
 
 ---
 
@@ -22,7 +23,8 @@ with Supabase providing authentication and the (intended) database backend.
 | Styling | Plain CSS (`src/App.css`, `src/index.css`) | – |
 | Language | JavaScript (JSX, ES modules) | – |
 
-There is no TypeScript, no router, no state-management library and no test suite.
+There is no TypeScript, router, or state-management library. Node's test runner
+executes local-backend workflow tests and SQL integration tests against PGlite.
 
 ## Project structure
 
@@ -84,7 +86,7 @@ The dev server prints a local URL (normally <http://localhost:5173>).
 | `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon (or publishable) key, safe for browser use *only if RLS is enabled* |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | No | Alternative name accepted by the client if the anon key is absent |
 
-`src/lib/supabase.js` throws at startup when the URL or key is missing.
+`src/lib/supabase.js` creates the cloud client only when both public values exist. If they are absent, cloud mode is unavailable; the app does not substitute demo data unless `?demo=1` is explicitly requested.
 
 ## Development commands
 
@@ -94,34 +96,23 @@ The dev server prints a local URL (normally <http://localhost:5173>).
 | `npm run build` | Produce a production build in `dist/` |
 | `npm run preview` | Preview the built output locally |
 | `npm run lint` | Run Oxlint over the source |
+| `npm test` | Run local workflow tests and PGlite migration integration tests |
 
 ## Current implementation status
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| React + Vite app shell | **Implemented** | Builds successfully; single-page dashboard, no router |
-| Responsive mobile layout | **Implemented (CSS)** | Breakpoints at 1500 / 1100 / 760 / 600 / 380 px; not verified on real devices |
-| Supabase client wiring | **Implemented** | Client created from env vars in `src/lib/supabase.js` |
-| Live Supabase connectivity | **Not verified / failing** | The project URL stored in `.env.local` no longer resolves in DNS (checked 2026-11-15) |
-| Email + password authentication | **Implemented (unverified)** | `signInWithPassword`, `signUp`, `onAuthStateChange`, sign-out |
-| Owner / salesperson roles | **Partially implemented** | Role read from `profiles.role`; UI gates owner-only screens. Enforcement depends on RLS, which could not be inspected |
-| Registration + owner approval | **Implemented (unverified)** | New accounts default to `pending`; owner can approve / disable / re-enable |
-| Profile page + avatar upload | **Implemented (unverified)** | Uses storage bucket `profile-picture` and RPC `update_my_avatar` |
-| Daily sales dashboard | **UI only** | All four stat cards and inventory numbers are hardcoded to `0` |
-| Transactions list | **UI only** | Always renders the "No sales recorded today" empty state |
-| Shop management | **Not implemented** | No shops table, screen or logic |
-| Product management | **UI only** | Two products hardcoded in `src/App.jsx` |
-| Shop-specific pricing | **Not implemented** | No pricing model or UI |
-| Sales recording | **Not implemented** | "Sales" nav item shows a "coming next" placeholder |
-| Bottle / carton calculations | **UI only** | Carton sizes appear only as static text (24 / 12 bottles) |
-| Inventory & stock movements | **UI only** | Inventory page is a placeholder; overview cards show `0` |
-| Cash / UPI payments | **Not implemented** | No payment capture or storage |
-| Credit & outstanding balances | **UI only** | Static "Outstanding ₹0.00" card only |
-| Payment verification | **Not implemented** | – |
-| Reporting | **Not implemented** | "Reports" nav item shows a placeholder |
-| Expenses / Customers | **Not implemented** | Nav items show placeholders |
-| RLS policies | **Not verified** | Database unreachable during audit; cannot confirm policies exist |
-| Deployment readiness | **Not ready** | Build passes, but backend is unreachable and features are incomplete |
+| Authentication and roles | **Implemented; cloud unverified** | Owner/Admin/Salesperson, pending approval and disabled states; local backend tests enforce roles |
+| Shops and assignments | **Implemented** | Submit, approve/reject, edit, assign salespeople, visits |
+| Pricing | **Implemented** | Default and per-shop prices for both carton variants |
+| Sales and invoices | **Implemented** | Cash/UPI sales confirm atomically; credit waits for approval; invoice snapshots and print-to-PDF |
+| Inventory | **Implemented** | Stock receipt, adjustment, movement history, sale deductions and return dispositions |
+| Payments and balances | **Implemented** | Payment claims, verification, allocation and receipts; only verified money reduces balances |
+| Returns and expenses | **Implemented** | Submit/review/settle workflows and corresponding stock/ledger effects |
+| Dashboard and reports | **Implemented** | Business metrics plus date, shop, salesperson and product reports/exports |
+| Responsive PWA | **Implemented; browser checked** | Web manifest, offline app shell, icons, service worker; 390px check had no horizontal overflow |
+| Database | **Implemented in nine ordered additive migrations; remote not deployed** | CI applies the nine-file release package to disposable PostgreSQL/PGlite test databases; the historical 20261117 drafts are excluded |
+| Cloud readiness | **Release HOLD** | Staging is healthy but has no migrations or public business tables; two security warnings remain for `public.rls_auto_enable()`. Auth/JWT/PostgREST/RLS, the actual Supabase event trigger after ACL revocation, backup/restore and business acceptance still require staging validation. Production remains untouched |
 
 ## GitHub repository
 
@@ -145,11 +136,13 @@ A full technical audit is generated at `reports/ETHEREAL_PROJECT_AUDIT.pdf`.
 
 - `src/App-backup.jsx` is an exact duplicate of `src/App.jsx` (identical SHA-256).
   It is committed for history but is not imported anywhere.
-- Oxlint reports two React warnings in both `App.jsx` and `App-backup.jsx`
-  (impure `Date` call during render; `setState` inside an effect). No lint errors.
-- The Supabase project referenced by `.env.local` is unreachable; authentication and
-  database behaviour therefore cannot be confirmed until the project is restored or
-  a new project is configured.
+- `npm run lint` completes with React hooks/compiler warnings; it reports no errors.
+- `npm run build` completes; Vite reports the main JS chunk is above 500 kB.
+- CI currently passes 53 automated tests and a PostgreSQL 17.12 real-concurrency rehearsal (73/73 checks), plus migration preflight, lint and production build. These disposable-database checks do not prove live Supabase Auth/JWT/PostgREST/RLS or restore readiness.
+- The local demo is browser localStorage data and is not a production backend. Cloud release remains blocked pending staging-specific validation, verified backup/restore, independent review and end-to-end business acceptance.
+- Public browser owner claiming is disabled; the designated owner must be provisioned by a trusted project operator. Cloud profile-picture uploads remain disabled until private Storage policies are reviewed and tested.
+- The exact current test results and security review are recorded in
+  `reports/implementation-report.pdf` when generated.
 - An unrelated, empty public repository (`Harshrajput88/Etheral-Business-Manager`)
   still exists on the GitHub account. It contains no code or secrets; clean-up
   (make private or delete) needs owner approval.

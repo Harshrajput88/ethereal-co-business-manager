@@ -1,0 +1,2649 @@
+{
+  "inspection_status": "completed_read_only",
+  "inspection_date": "2026-11-18",
+  "target": {
+    "project_name": "ethereal-co-stagging",
+    "project_ref": "zvnnnplpjkwmnaukthgp",
+    "cli_reported_branch_classification": "production",
+    "classification_note": "The CLI banner designation refers to the project main/production branch, as clarified by the owner; the project ref is distinct from the production application project.",
+    "production_application_project_ref": "jojfscpsaqfcazqzkjio",
+    "configured_ref_match": true,
+    "database": "postgres",
+    "inspection_role": "supabase_read_only_user",
+    "server_version": "17.12",
+    "remote_target_selected_explicitly": true
+  },
+  "inspection_safety": {
+    "supabase_cli_read_only_transaction": true,
+    "mutating_sql_or_ddl_executed": false,
+    "migrations_executed": false,
+    "environment_or_credential_files_read": false,
+    "function_bodies_read": false,
+    "private_user_records_inspected": false,
+    "aggregate_only_auth_user_count": 0,
+    "storage_objects_inspected": false,
+    "business_record_rows_selected": false
+  },
+  "schema_inventory": {
+    "schemas": [
+      {
+        "name": "auth",
+        "owner": "supabase_admin",
+        "usage_anon": true,
+        "usage_authenticated": true,
+        "usage_service_role": true
+      },
+      {
+        "name": "public",
+        "owner": "pg_database_owner",
+        "usage_anon": true,
+        "usage_authenticated": true,
+        "usage_service_role": true
+      },
+      {
+        "name": "storage",
+        "owner": "supabase_admin",
+        "usage_anon": true,
+        "usage_authenticated": true,
+        "usage_service_role": true
+      }
+    ],
+    "public_relations": [],
+    "public_relation_count": 0,
+    "auth_relation_count": 27,
+    "storage_relation_count": 10,
+    "auth_and_storage_relations": [
+      {
+        "kind": "table",
+        "name": "audit_log_entries",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "custom_oauth_providers",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "flow_state",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "identities",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "instances",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "mfa_amr_claims",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "mfa_challenges",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "mfa_factors",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "mfa_recovery_code_sets",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "mfa_recovery_codes",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "oauth_authorizations",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "oauth_client_states",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "oauth_clients",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "oauth_consents",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "one_time_tokens",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "refresh_tokens",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "saml_providers",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "saml_relay_states",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "schema_migrations",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "scim_tokens",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "scim_users",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "sessions",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "sso_domains",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "sso_providers",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "users",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "webauthn_challenges",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "webauthn_credentials",
+        "owner": "supabase_auth_admin",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "schema": "auth"
+      },
+      {
+        "kind": "table",
+        "name": "bucket_lifecycle_states",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "buckets",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "buckets_analytics",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "buckets_vectors",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "lifecycle_abandoned_artifacts",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "migrations",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "objects",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "s3_multipart_uploads",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "s3_multipart_uploads_parts",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      },
+      {
+        "kind": "table",
+        "name": "vector_indexes",
+        "owner": "supabase_storage_admin",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "storage"
+      }
+    ],
+    "public_business_aggregate_counts": {},
+    "business_data_preservation_evidence": "No public relations are present, so no public business-table counts were applicable. auth.users aggregate count is 0. Storage object rows were not inspected."
+  },
+  "migration_history": {
+    "supabase_migrations_schema_present": false,
+    "supabase_migrations_schema_migrations_table_present": false,
+    "project_migration_history_status": "not available in the usual supabase_migrations.schema_migrations relation; no project migration IDs can be confirmed from this database catalog",
+    "auth_schema_migrations": {
+      "present": true,
+      "columns": [
+        {
+          "name": "version",
+          "nullable": "NO",
+          "ordinal": 1,
+          "type": "character varying",
+          "udt_name": "varchar"
+        }
+      ],
+      "row_values_read": false,
+      "relevance": "Supabase Auth internal migration ledger; not treated as the project SQL migration ledger."
+    },
+    "expected_business_migrations": [
+      {
+        "file": "20261118000100_business_schema.sql",
+        "status": "file exists locally; remote ledger status unverified; no business objects/functions found in public"
+      },
+      {
+        "file": "20261118000200_business_core_rpcs.sql",
+        "status": "file exists locally; remote ledger status unverified; no business objects/functions found in public"
+      },
+      {
+        "file": "20261118000300_business_sales_rpcs.sql",
+        "status": "file exists locally; remote ledger status unverified; no business objects/functions found in public"
+      },
+      {
+        "file": "20261118000400_business_payment_rpcs.sql",
+        "status": "file exists locally; remote ledger status unverified; no business objects/functions found in public"
+      },
+      {
+        "file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "status": "file exists locally; remote ledger status unverified; no business objects/functions found in public"
+      },
+      {
+        "file": "20261118000600_business_dashboard_team_rpcs.sql",
+        "status": "file exists locally; remote ledger status unverified; no business objects/functions found in public"
+      }
+    ],
+    "older_phase1_migration_files_also_in_local_directory": [
+      "20261117000100_phase1_foundation.sql",
+      "20261117000200_phase1_commerce_ledgers.sql"
+    ],
+    "older_phase1_deployment_warning": "Do not use a generic push until migration history and the older reviewed draft files are reconciled."
+  },
+  "profiles_auth": {
+    "public_profiles_table_present": false,
+    "public_profiles_columns": [],
+    "auth_users_table_present": true,
+    "auth_users_aggregate_count": 0,
+    "auth_or_profiles_triggers": [],
+    "auth_or_profile_functions_found": [],
+    "auth_storage_system_triggers": [
+      {
+        "definition": "CREATE TRIGGER enforce_bucket_name_length_trigger BEFORE INSERT OR UPDATE OF name ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_bucket_name_length()",
+        "function_name": "enforce_bucket_name_length",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": null,
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "enforce_bucket_name_length_trigger"
+      },
+      {
+        "definition": "CREATE TRIGGER enforce_versioning_status_transition BEFORE UPDATE OF versioning_status ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_versioning_status_transition()",
+        "function_name": "enforce_versioning_status_transition",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": null,
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "enforce_versioning_status_transition"
+      },
+      {
+        "definition": "CREATE TRIGGER protect_active_lifecycle_states BEFORE DELETE ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.protect_active_lifecycle_states()",
+        "function_name": "protect_active_lifecycle_states",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": [
+          "search_path=pg_catalog"
+        ],
+        "function_security_definer": true,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "protect_active_lifecycle_states"
+      },
+      {
+        "definition": "CREATE TRIGGER protect_bucket_control_insert BEFORE INSERT ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.protect_bucket_control_columns('service_role')",
+        "function_name": "protect_bucket_control_columns",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": [
+          "search_path=pg_catalog"
+        ],
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "protect_bucket_control_insert"
+      },
+      {
+        "definition": "CREATE TRIGGER protect_bucket_control_update BEFORE UPDATE OF lifecycle_configuration, lifecycle_configuration_generation ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.protect_bucket_control_columns()",
+        "function_name": "protect_bucket_control_columns",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": [
+          "search_path=pg_catalog"
+        ],
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "protect_bucket_control_update"
+      },
+      {
+        "definition": "CREATE TRIGGER protect_bucket_control_update_role AFTER UPDATE OF lifecycle_configuration, lifecycle_configuration_generation ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_bucket_lifecycle_service_role('service_role')",
+        "function_name": "enforce_bucket_lifecycle_service_role",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": [
+          "search_path=pg_catalog"
+        ],
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "protect_bucket_control_update_role"
+      },
+      {
+        "definition": "CREATE TRIGGER protect_buckets_delete BEFORE DELETE ON storage.buckets FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()",
+        "function_name": "protect_delete",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": null,
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "protect_buckets_delete"
+      },
+      {
+        "definition": "CREATE TRIGGER wake_lifecycle_on_policy_write AFTER INSERT OR UPDATE OF lifecycle_configuration_generation ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.wake_lifecycle_state()",
+        "function_name": "wake_lifecycle_state",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": [
+          "search_path=pg_catalog"
+        ],
+        "function_security_definer": true,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "wake_lifecycle_on_policy_write"
+      },
+      {
+        "definition": "CREATE TRIGGER wake_lifecycle_on_versioning_enable AFTER UPDATE OF versioning_status ON storage.buckets FOR EACH ROW WHEN (new.lifecycle_configuration IS NOT NULL) EXECUTE FUNCTION storage.wake_lifecycle_state()",
+        "function_name": "wake_lifecycle_state",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": [
+          "search_path=pg_catalog"
+        ],
+        "function_security_definer": true,
+        "schema": "storage",
+        "table": "buckets",
+        "trigger": "wake_lifecycle_on_versioning_enable"
+      },
+      {
+        "definition": "CREATE TRIGGER protect_objects_delete BEFORE DELETE ON storage.objects FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()",
+        "function_name": "protect_delete",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": null,
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "objects",
+        "trigger": "protect_objects_delete"
+      },
+      {
+        "definition": "CREATE TRIGGER update_objects_updated_at BEFORE UPDATE ON storage.objects FOR EACH ROW EXECUTE FUNCTION storage.update_updated_at_column()",
+        "function_name": "update_updated_at_column",
+        "function_owner": "supabase_storage_admin",
+        "function_schema": "storage",
+        "function_search_path": null,
+        "function_security_definer": false,
+        "schema": "storage",
+        "table": "objects",
+        "trigger": "update_objects_updated_at"
+      }
+    ]
+  },
+  "frontend_rpc_comparison": {
+    "inventory_source": "docs/SUPABASE_RPC_INVENTORY.md",
+    "frontend_call_count": 42,
+    "all_42_staging_rpcs_found": false,
+    "all_42_staging_rpcs_absent": true,
+    "remote_public_api_routine_count": 0,
+    "expected_calls": [
+      {
+        "name": "api_update_my_name",
+        "callers": [
+          "src/pages/Profile.jsx"
+        ],
+        "frontend_arguments": [
+          "p_full_name"
+        ],
+        "sql_identity_arguments": "api_update_my_name(p_full_name text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 248,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_update_my_avatar",
+        "callers": [
+          "src/pages/Profile.jsx"
+        ],
+        "frontend_arguments": [
+          "p_avatar_url"
+        ],
+        "sql_identity_arguments": "api_update_my_avatar(p_avatar_url text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 275,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_needs_first_owner",
+        "callers": [
+          "src/App.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_needs_first_owner()",
+        "return_type": "boolean",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 206,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_claim_owner",
+        "callers": [
+          "src/App.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_claim_owner()",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 218,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_business_settings",
+        "callers": [
+          "src/pages/Reports.jsx",
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_business_settings()",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 305,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_update_business_settings",
+        "callers": [
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [
+          "p_business_name",
+          "p_tagline",
+          "p_address",
+          "p_phone",
+          "p_email",
+          "p_gstin"
+        ],
+        "sql_identity_arguments": "api_update_business_settings(p_business_name text, p_tagline text, p_address text, p_phone text, p_email text, p_gstin text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 328,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_credit_status",
+        "callers": [
+          "src/components/NewSaleModal.jsx",
+          "src/pages/Overview.jsx",
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_credit_status()",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 370,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_set_credit_block",
+        "callers": [
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [
+          "p_blocked",
+          "p_reason"
+        ],
+        "sql_identity_arguments": "api_set_credit_block(p_blocked boolean, p_reason text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 388,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_catalog",
+        "callers": [
+          "src/components/NewSaleModal.jsx",
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_catalog()",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 8,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_shop_prices",
+        "callers": [
+          "src/components/NewSaleModal.jsx",
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id"
+        ],
+        "sql_identity_arguments": "api_shop_prices(p_shop_id uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 46,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_set_default_price",
+        "callers": [
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [
+          "p_variant_id",
+          "p_amount"
+        ],
+        "sql_identity_arguments": "api_set_default_price(p_variant_id uuid, p_amount numeric)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 84,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_set_shop_price",
+        "callers": [
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id",
+          "p_variant_id",
+          "p_amount"
+        ],
+        "sql_identity_arguments": "api_set_shop_price(p_shop_id uuid, p_variant_id uuid, p_amount numeric)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 119,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_clear_shop_price",
+        "callers": [
+          "src/pages/Settings.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id",
+          "p_variant_id"
+        ],
+        "sql_identity_arguments": "api_clear_shop_price(p_shop_id uuid, p_variant_id uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 161,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_shops_list",
+        "callers": [
+          "src/components/NewSaleModal.jsx",
+          "src/components/PaymentModal.jsx",
+          "src/pages/Settings.jsx",
+          "src/pages/Shops.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_shops_list()",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 424,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_submit_shop",
+        "callers": [
+          "src/pages/Shops.jsx"
+        ],
+        "frontend_arguments": [
+          "p_name",
+          "p_phone",
+          "p_email",
+          "p_address_line1",
+          "p_address_line2",
+          "p_locality",
+          "p_city",
+          "p_state",
+          "p_postal_code",
+          "p_notes",
+          "p_latitude",
+          "p_longitude"
+        ],
+        "sql_identity_arguments": "api_submit_shop(p_name text, p_phone text, p_email text, p_address_line1 text, p_address_line2 text, p_locality text, p_city text, p_state text, p_postal_code text, p_notes text, p_latitude numeric, p_longitude numeric)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 474,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_review_shop",
+        "callers": [
+          "src/pages/Shops.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id",
+          "p_decision",
+          "p_reason",
+          "p_primary_salesperson_id",
+          "p_additional_salesperson_ids"
+        ],
+        "sql_identity_arguments": "api_review_shop(p_shop_id uuid, p_decision text, p_reason text, p_primary_salesperson_id uuid, p_additional_salesperson_ids uuid[])",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 531,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_assign_shop_salespeople",
+        "callers": [
+          "src/pages/Shops.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id",
+          "p_primary_salesperson_id",
+          "p_additional_salesperson_ids"
+        ],
+        "sql_identity_arguments": "api_assign_shop_salespeople(p_shop_id uuid, p_primary_salesperson_id uuid, p_additional_salesperson_ids uuid[])",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 608,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_add_shop_visit",
+        "callers": [
+          "src/pages/Shops.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id",
+          "p_note"
+        ],
+        "sql_identity_arguments": "api_add_shop_visit(p_shop_id uuid, p_note text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000200_business_core_rpcs.sql",
+        "migration_line": 656,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_team_list",
+        "callers": [
+          "src/pages/Shops.jsx",
+          "src/pages/Team.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_team_list()",
+        "return_type": "jsonb",
+        "migration_file": "20261118000600_business_dashboard_team_rpcs.sql",
+        "migration_line": 25,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_set_employee_status",
+        "callers": [
+          "src/pages/Team.jsx"
+        ],
+        "frontend_arguments": [
+          "p_profile_id",
+          "p_status"
+        ],
+        "sql_identity_arguments": "api_set_employee_status(p_profile_id uuid, p_status text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000600_business_dashboard_team_rpcs.sql",
+        "migration_line": 55,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_set_employee_role",
+        "callers": [
+          "src/pages/Team.jsx"
+        ],
+        "frontend_arguments": [
+          "p_profile_id",
+          "p_role"
+        ],
+        "sql_identity_arguments": "api_set_employee_role(p_profile_id uuid, p_role text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000600_business_dashboard_team_rpcs.sql",
+        "migration_line": 115,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_audit_log",
+        "callers": [
+          "src/pages/Team.jsx"
+        ],
+        "frontend_arguments": [
+          "p_limit"
+        ],
+        "sql_identity_arguments": "api_audit_log(p_limit integer)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000600_business_dashboard_team_rpcs.sql",
+        "migration_line": 351,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_sales_list",
+        "callers": [
+          "src/components/ReturnModal.jsx",
+          "src/pages/Invoices.jsx",
+          "src/pages/Reports.jsx",
+          "src/pages/Sales.jsx"
+        ],
+        "frontend_arguments": [
+          "p_from",
+          "p_to",
+          "p_limit"
+        ],
+        "sql_identity_arguments": "api_sales_list(p_from date, p_to date, p_limit integer)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 494,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_create_sale",
+        "callers": [
+          "src/components/NewSaleModal.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id",
+          "p_payment_terms",
+          "p_lines",
+          "p_client_reference"
+        ],
+        "sql_identity_arguments": "api_create_sale(p_shop_id uuid, p_payment_terms text, p_lines jsonb, p_client_reference uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 190,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_review_credit_sale",
+        "callers": [
+          "src/components/SaleDetailModal.jsx"
+        ],
+        "frontend_arguments": [
+          "p_sale_id",
+          "p_decision",
+          "p_reason"
+        ],
+        "sql_identity_arguments": "api_review_credit_sale(p_sale_id uuid, p_decision text, p_reason text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 401,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_sale_detail",
+        "callers": [
+          "src/components/ReturnModal.jsx",
+          "src/components/SaleDetailModal.jsx"
+        ],
+        "frontend_arguments": [
+          "p_sale_id"
+        ],
+        "sql_identity_arguments": "api_sale_detail(p_sale_id uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000300_business_sales_rpcs.sql",
+        "migration_line": 548,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_shop_open_sales",
+        "callers": [
+          "src/components/PaymentModal.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id"
+        ],
+        "sql_identity_arguments": "api_shop_open_sales(p_shop_id uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000400_business_payment_rpcs.sql",
+        "migration_line": 5,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_payments_list",
+        "callers": [
+          "src/pages/Payments.jsx",
+          "src/pages/Reports.jsx"
+        ],
+        "frontend_arguments": [
+          "p_from",
+          "p_to",
+          "p_limit"
+        ],
+        "sql_identity_arguments": "api_payments_list(p_from date, p_to date, p_limit integer)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000400_business_payment_rpcs.sql",
+        "migration_line": 262,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_record_payment",
+        "callers": [
+          "src/components/PaymentModal.jsx"
+        ],
+        "frontend_arguments": [
+          "p_shop_id",
+          "p_method",
+          "p_amount",
+          "p_received_at",
+          "p_external_reference",
+          "p_allocations",
+          "p_client_reference"
+        ],
+        "sql_identity_arguments": "api_record_payment(p_shop_id uuid, p_method text, p_amount numeric, p_received_at timestamptz, p_external_reference text, p_allocations jsonb, p_client_reference uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000400_business_payment_rpcs.sql",
+        "migration_line": 30,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_verify_payment",
+        "callers": [
+          "src/pages/Payments.jsx"
+        ],
+        "frontend_arguments": [
+          "p_payment_id",
+          "p_decision",
+          "p_reason"
+        ],
+        "sql_identity_arguments": "api_verify_payment(p_payment_id uuid, p_decision text, p_reason text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000400_business_payment_rpcs.sql",
+        "migration_line": 131,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_inventory_list",
+        "callers": [
+          "src/pages/Inventory.jsx"
+        ],
+        "frontend_arguments": [
+          "p_limit"
+        ],
+        "sql_identity_arguments": "api_inventory_list(p_limit integer)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 8,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_receive_stock",
+        "callers": [
+          "src/pages/Inventory.jsx"
+        ],
+        "frontend_arguments": [
+          "p_variant_id",
+          "p_cartons",
+          "p_reason",
+          "p_client_reference"
+        ],
+        "sql_identity_arguments": "api_receive_stock(p_variant_id uuid, p_cartons integer, p_reason text, p_client_reference uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 70,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_adjust_stock",
+        "callers": [
+          "src/pages/Inventory.jsx"
+        ],
+        "frontend_arguments": [
+          "p_variant_id",
+          "p_bucket",
+          "p_cartons_delta",
+          "p_reason"
+        ],
+        "sql_identity_arguments": "api_adjust_stock(p_variant_id uuid, p_bucket text, p_cartons_delta integer, p_reason text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 128,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_returns_list",
+        "callers": [
+          "src/pages/Returns.jsx"
+        ],
+        "frontend_arguments": [
+          "p_limit"
+        ],
+        "sql_identity_arguments": "api_returns_list(p_limit integer)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 390,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_submit_return",
+        "callers": [
+          "src/components/ReturnModal.jsx"
+        ],
+        "frontend_arguments": [
+          "p_sale_id",
+          "p_reason",
+          "p_lines"
+        ],
+        "sql_identity_arguments": "api_submit_return(p_sale_id uuid, p_reason text, p_lines jsonb)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 192,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_review_return",
+        "callers": [
+          "src/pages/Returns.jsx"
+        ],
+        "frontend_arguments": [
+          "p_return_id",
+          "p_decision",
+          "p_reason"
+        ],
+        "sql_identity_arguments": "api_review_return(p_return_id uuid, p_decision text, p_reason text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 279,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_expenses_list",
+        "callers": [
+          "src/pages/Expenses.jsx",
+          "src/pages/Reports.jsx"
+        ],
+        "frontend_arguments": [
+          "p_from",
+          "p_to",
+          "p_limit"
+        ],
+        "sql_identity_arguments": "api_expenses_list(p_from date, p_to date, p_limit integer)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 443,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_submit_expense",
+        "callers": [
+          "src/pages/Expenses.jsx"
+        ],
+        "frontend_arguments": [
+          "p_expense_date",
+          "p_category",
+          "p_description",
+          "p_amount",
+          "p_client_reference"
+        ],
+        "sql_identity_arguments": "api_submit_expense(p_expense_date date, p_category text, p_description text, p_amount numeric, p_client_reference uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 483,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_review_expense",
+        "callers": [
+          "src/pages/Expenses.jsx"
+        ],
+        "frontend_arguments": [
+          "p_expense_id",
+          "p_decision",
+          "p_reason"
+        ],
+        "sql_identity_arguments": "api_review_expense(p_expense_id uuid, p_decision text, p_reason text)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 537,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_mark_expense_paid",
+        "callers": [
+          "src/pages/Expenses.jsx"
+        ],
+        "frontend_arguments": [
+          "p_expense_id"
+        ],
+        "sql_identity_arguments": "api_mark_expense_paid(p_expense_id uuid)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000500_business_inventory_return_expense_rpcs.sql",
+        "migration_line": 597,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_dashboard",
+        "callers": [
+          "src/App.jsx",
+          "src/pages/Overview.jsx"
+        ],
+        "frontend_arguments": [],
+        "sql_identity_arguments": "api_dashboard()",
+        "return_type": "jsonb",
+        "migration_file": "20261118000600_business_dashboard_team_rpcs.sql",
+        "migration_line": 170,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      },
+      {
+        "name": "api_product_report",
+        "callers": [
+          "src/pages/Reports.jsx"
+        ],
+        "frontend_arguments": [
+          "p_from",
+          "p_to"
+        ],
+        "sql_identity_arguments": "api_product_report(p_from date, p_to date)",
+        "return_type": "jsonb",
+        "migration_file": "20261118000600_business_dashboard_team_rpcs.sql",
+        "migration_line": 309,
+        "authenticated_execute_grant": true,
+        "public_anon_revoked": true,
+        "staging_status": "not found in public schema catalog",
+        "remote_signature": null,
+        "remote_execute_permissions": null
+      }
+    ]
+  },
+  "permissions_rls": {
+    "policies_visible_in_public_auth_storage": [],
+    "policy_count": 0,
+    "public_relation_rls": [],
+    "auth_relation_rls": [
+      {
+        "table": "audit_log_entries",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "custom_oauth_providers",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "flow_state",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "identities",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "instances",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "mfa_amr_claims",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "mfa_challenges",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "mfa_factors",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "mfa_recovery_code_sets",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "mfa_recovery_codes",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "oauth_authorizations",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "oauth_client_states",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "oauth_clients",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "oauth_consents",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "one_time_tokens",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "refresh_tokens",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "saml_providers",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "saml_relay_states",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "schema_migrations",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "scim_tokens",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "scim_users",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "sessions",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "sso_domains",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "sso_providers",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "users",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "webauthn_challenges",
+        "enabled": false,
+        "forced": false
+      },
+      {
+        "table": "webauthn_credentials",
+        "enabled": false,
+        "forced": false
+      }
+    ],
+    "storage_relation_rls": [
+      {
+        "table": "bucket_lifecycle_states",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "buckets",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "buckets_analytics",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "buckets_vectors",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "lifecycle_abandoned_artifacts",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "migrations",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "objects",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "s3_multipart_uploads",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "s3_multipart_uploads_parts",
+        "enabled": true,
+        "forced": false
+      },
+      {
+        "table": "vector_indexes",
+        "enabled": true,
+        "forced": false
+      }
+    ],
+    "schema_acl": [
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "USAGE",
+        "schema": "auth"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "USAGE",
+        "schema": "auth"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "USAGE",
+        "schema": "auth"
+      },
+      {
+        "grantable": false,
+        "grantee": "PUBLIC",
+        "privilege": "USAGE",
+        "schema": "public"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "USAGE",
+        "schema": "public"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "USAGE",
+        "schema": "public"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "USAGE",
+        "schema": "public"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "USAGE",
+        "schema": "storage"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "USAGE",
+        "schema": "storage"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "USAGE",
+        "schema": "storage"
+      }
+    ],
+    "table_acl": [
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "MAINTAIN",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "REFERENCES",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRIGGER",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRUNCATE",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "bucket_lifecycle_states"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "MAINTAIN",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "REFERENCES",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRIGGER",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRUNCATE",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "buckets"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "MAINTAIN",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "REFERENCES",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRIGGER",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRUNCATE",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "buckets_analytics"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets_vectors"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets_vectors"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "buckets_vectors"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "MAINTAIN",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "REFERENCES",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRIGGER",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRUNCATE",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "lifecycle_abandoned_artifacts"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "MAINTAIN",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "REFERENCES",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRIGGER",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRUNCATE",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "objects"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "MAINTAIN",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "REFERENCES",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRIGGER",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRUNCATE",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "s3_multipart_uploads"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "DELETE",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "INSERT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "MAINTAIN",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "REFERENCES",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRIGGER",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "TRUNCATE",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "UPDATE",
+        "schema": "storage",
+        "table": "s3_multipart_uploads_parts"
+      },
+      {
+        "grantable": false,
+        "grantee": "anon",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "vector_indexes"
+      },
+      {
+        "grantable": false,
+        "grantee": "authenticated",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "vector_indexes"
+      },
+      {
+        "grantable": false,
+        "grantee": "service_role",
+        "privilege": "SELECT",
+        "schema": "storage",
+        "table": "vector_indexes"
+      }
+    ],
+    "function_execute_permissions": [
+      {
+        "schema": "storage",
+        "name": "enforce_bucket_lifecycle_service_role",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": false,
+        "search_path": [
+          "search_path=pg_catalog"
+        ],
+        "anon": true,
+        "authenticated": true,
+        "service_role": true,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      },
+      {
+        "schema": "storage",
+        "name": "enforce_bucket_name_length",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": false,
+        "search_path": null,
+        "anon": true,
+        "authenticated": true,
+        "service_role": true,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      },
+      {
+        "schema": "storage",
+        "name": "enforce_versioning_status_transition",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": false,
+        "search_path": null,
+        "anon": true,
+        "authenticated": true,
+        "service_role": true,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      },
+      {
+        "schema": "storage",
+        "name": "protect_active_lifecycle_states",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": true,
+        "search_path": [
+          "search_path=pg_catalog"
+        ],
+        "anon": false,
+        "authenticated": false,
+        "service_role": false,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      },
+      {
+        "schema": "storage",
+        "name": "protect_bucket_control_columns",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": false,
+        "search_path": [
+          "search_path=pg_catalog"
+        ],
+        "anon": true,
+        "authenticated": true,
+        "service_role": true,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      },
+      {
+        "schema": "storage",
+        "name": "protect_delete",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": false,
+        "search_path": null,
+        "anon": true,
+        "authenticated": true,
+        "service_role": true,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      },
+      {
+        "schema": "storage",
+        "name": "update_updated_at_column",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": false,
+        "search_path": null,
+        "anon": true,
+        "authenticated": true,
+        "service_role": true,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      },
+      {
+        "schema": "storage",
+        "name": "wake_lifecycle_state",
+        "arguments": "",
+        "owner": "supabase_storage_admin",
+        "security_definer": true,
+        "search_path": [
+          "search_path=pg_catalog"
+        ],
+        "anon": false,
+        "authenticated": false,
+        "service_role": false,
+        "explicit_acl": [
+          {
+            "grantable": false,
+            "grantee": "supabase_storage_admin",
+            "privilege": "EXECUTE"
+          }
+        ]
+      }
+    ],
+    "application_rpc_permission_finding": "No public api_* routines exist in the visible staging catalog; therefore no current staging EXECUTE grants/signatures exist for the 42 frontend calls."
+  },
+  "storage": {
+    "bucket_table_columns": [
+      {
+        "name": "id",
+        "nullable": "NO",
+        "ordinal": 1,
+        "type": "text"
+      },
+      {
+        "name": "name",
+        "nullable": "NO",
+        "ordinal": 2,
+        "type": "text"
+      },
+      {
+        "name": "owner",
+        "nullable": "YES",
+        "ordinal": 3,
+        "type": "uuid"
+      },
+      {
+        "name": "created_at",
+        "nullable": "YES",
+        "ordinal": 4,
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "updated_at",
+        "nullable": "YES",
+        "ordinal": 5,
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "public",
+        "nullable": "YES",
+        "ordinal": 6,
+        "type": "boolean"
+      },
+      {
+        "name": "avif_autodetection",
+        "nullable": "YES",
+        "ordinal": 7,
+        "type": "boolean"
+      },
+      {
+        "name": "file_size_limit",
+        "nullable": "YES",
+        "ordinal": 8,
+        "type": "bigint"
+      },
+      {
+        "name": "allowed_mime_types",
+        "nullable": "YES",
+        "ordinal": 9,
+        "type": "ARRAY"
+      },
+      {
+        "name": "owner_id",
+        "nullable": "YES",
+        "ordinal": 10,
+        "type": "text"
+      },
+      {
+        "name": "type",
+        "nullable": "NO",
+        "ordinal": 11,
+        "type": "USER-DEFINED"
+      },
+      {
+        "name": "versioning_status",
+        "nullable": "NO",
+        "ordinal": 12,
+        "type": "text"
+      },
+      {
+        "name": "lifecycle_configuration",
+        "nullable": "YES",
+        "ordinal": 13,
+        "type": "jsonb"
+      },
+      {
+        "name": "lifecycle_configuration_generation",
+        "nullable": "YES",
+        "ordinal": 14,
+        "type": "uuid"
+      }
+    ],
+    "buckets": [],
+    "bucket_count": 0,
+    "required_frontend_bucket": "profile-picture",
+    "required_frontend_bucket_present": false,
+    "storage_policies_visible": [],
+    "storage_objects_read": false
+  },
+  "compatibility_findings": [
+    {
+      "severity": "blocker",
+      "finding": "The business API is not deployed in the inspected staging public schema.",
+      "evidence": "0 public relations, 0 public api_* routines and all 42 frontend RPC calls absent.",
+      "impact": "If the frontend is configured to this staging project, its RPC calls will fail because the corresponding functions do not exist; the browser/schema-cache response was not separately captured."
+    },
+    {
+      "severity": "blocker",
+      "finding": "public.profiles is absent.",
+      "evidence": "No public relations and no profiles columns returned; Auth users aggregate count is 0.",
+      "impact": "The frontend profile SELECT will fail against this staging target until the profile schema is installed. Existing Auth accounts requiring profile backfill were not observed by aggregate count."
+    },
+    {
+      "severity": "blocker",
+      "finding": "Profile Storage bucket is absent.",
+      "evidence": "storage.buckets contains 0 rows; frontend expects profile-picture.",
+      "impact": "Avatar upload cannot work until a bucket and reviewed object policies are provisioned. The six SQL migrations do not create the bucket."
+    },
+    {
+      "severity": "blocker",
+      "finding": "Project migration history is not available in the usual Supabase CLI ledger.",
+      "evidence": "No supabase_migrations schema or schema_migrations table appears in catalog; auth.schema_migrations is a separate internal ledger.",
+      "impact": "Cannot mark any of the six migrations as already applied or safely determine what a generic CLI push would select."
+    },
+    {
+      "severity": "warning",
+      "finding": "Two older 20261117 Phase 1 draft migration files remain in the local migration directory.",
+      "evidence": [
+        "20261117000100_phase1_foundation.sql",
+        "20261117000200_phase1_commerce_ledgers.sql"
+      ],
+      "impact": "The Phase 1 SQL Security Review identifies those older drafts as not ready for execution and requiring reconciliation. A generic pending-migration operation must not be used until local migration history and these files are reconciled."
+    },
+    {
+      "severity": "warning",
+      "finding": "The existing Phase 1 review is not a security approval of the six 20261118 business migrations.",
+      "evidence": "The review addresses the older 20261117 Phase 1 draft copies and lists open RLS/ownership/reconciliation gates.",
+      "impact": "Obtain a focused review and staging rehearsal for the six current migrations before any write."
+    },
+    {
+      "severity": "warning",
+      "finding": "A historical Phase 1 document says profiles existed, but this current staging snapshot has no public.profiles relation.",
+      "evidence": "docs/PHASE_1_DATABASE_ARCHITECTURE.md records earlier profiles metadata as not re-verified; the Phase 1 SQL review also assumes an existing profile table.",
+      "impact": "Use this target-specific current catalog evidence for staging, and reconcile the older claim’s project/time scope before deployment."
+    }
+  ],
+  "frontend_error_cause": {
+    "confirmed_staging_object_cause": "If pointed at this staging reference, database RPC failures are explained by the absence of every expected public API function; profile lookup is additionally blocked by the missing public.profiles relation.",
+    "exact_browser_error_text": "not captured in this read-only metadata inspection",
+    "frontend_project_configuration": "not read; no environment files were accessed",
+    "postgrest_schema_cache_state": "not queried independently",
+    "production_project_inspected": false
+  },
+  "local_comparisons": {
+    "rpc_contract_audit_errors": [],
+    "local_business_migrations": [
+      "20261118000100_business_schema.sql",
+      "20261118000200_business_core_rpcs.sql",
+      "20261118000300_business_sales_rpcs.sql",
+      "20261118000400_business_payment_rpcs.sql",
+      "20261118000500_business_inventory_return_expense_rpcs.sql",
+      "20261118000600_business_dashboard_team_rpcs.sql"
+    ],
+    "all_local_migration_files": [
+      "20261117000100_phase1_foundation.sql",
+      "20261117000200_phase1_commerce_ledgers.sql",
+      "20261118000100_business_schema.sql",
+      "20261118000200_business_core_rpcs.sql",
+      "20261118000300_business_sales_rpcs.sql",
+      "20261118000400_business_payment_rpcs.sql",
+      "20261118000500_business_inventory_return_expense_rpcs.sql",
+      "20261118000600_business_dashboard_team_rpcs.sql"
+    ],
+    "phase1_review_documents": [
+      "docs/PHASE_1_DATABASE_ARCHITECTURE.md",
+      "docs/PHASE_1_PERMISSION_MATRIX.md",
+      "docs/PHASE_1_SQL_SECURITY_REVIEW.md",
+      "docs/PHASE_1_WORKFLOWS.md",
+      "docs/PHASE_1_IMPLEMENTATION_PLAN.md"
+    ],
+    "phase1_security_review_scope_note": "The cited Phase 1 review warns against blindly applying the older draft migrations; it is not a review/approval of the six 20261118 files. Historical documentation assumes profiles existed; that assumption conflicts with this current staging snapshot and needs project/time reconciliation."
+  },
+  "proposed_safe_staging_sequence": [
+    "Keep production ref jojfscpsaqfcazqzkjio excluded from all commands; repeat the exact staging-ref guard immediately before each approved staging action.",
+    "Before any write, have the owner reconcile why the project migration ledger is absent and decide how the older 20261117 draft files are handled. Do not run generic supabase db push against the current directory.",
+    "Obtain focused owner/security review of the six 20261118 migrations against this observed empty public schema, standard auth/storage objects, RLS model, profile signup trigger, exact ACLs and rollback strategy.",
+    "Preserve current staging configuration and take an owner-approved backup/restore point even though the inspected public schema is empty; do not alter Auth or Storage system objects.",
+    "Rehearse only the reconciled, explicitly selected migration set on a disposable Supabase project. Resolve profile/Auth trigger behavior and migration-history bootstrapping first.",
+    "After separate explicit write approval, apply the approved migrations in timestamp order: 20261118000100 through 20261118000600. Do not apply older drafts by implication.",
+    "Provision profile-picture bucket and narrowly scoped Storage object policies as a separate reviewed configuration step; the six SQL files do not create it.",
+    "After approved DDL, reload the PostgREST schema cache; verify grants, RLS, all API signatures and authenticated role behavior with non-production test accounts.",
+    "Run the frontend against staging only after API, profile and Storage smoke checks pass; keep production deployment behind a separate approval."
+  ],
+  "inspection_limitations": [
+    "The CLI metadata role was supabase_read_only_user; metadata visibility is subject to that role, though the public catalog returned no public relation/function entries.",
+    "No function bodies, user rows, profiles, Auth records, business records, storage.objects, environment files, keys, passwords or tokens were read.",
+    "The application project configuration was not inspected, so the report does not claim that the current browser is pointed at this staging reference.",
+    "The PostgREST schema-cache state and exact browser error text were not queried or reproduced.",
+    "Migration history rows in auth.schema_migrations and storage.migrations were not read; they are subsystem-internal and do not substitute for supabase_migrations.schema_migrations."
+  ],
+  "approval_boundary": "Read-only inspection only. No database writes were performed. Stop and await separate explicit owner approval before any write operation."
+}

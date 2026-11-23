@@ -1,0 +1,65 @@
+{
+  "inspection_status": "stopped_target_verification_conflict",
+  "inspection_date": "2026-11-17",
+  "repository_branch": "implementation/finish-mvp",
+  "requested_target": "isolated staging Supabase project",
+  "local_target_check": {
+    "project_ref": "zvnnnplpjkwmnaukthgp",
+    "project_label": "ethereal-co-stagging",
+    "matches_recorded_staging_reference": true,
+    "evidence": [
+      "supabase/.temp/project-ref",
+      "supabase/.temp/linked-project.json",
+      "reports/ETHEREAL_PHASE_0B_STAGING_DATABASE_SECURITY_ASSESSMENT.pdf"
+    ]
+  },
+  "cli_target_banner": {
+    "project_ref": "zvnnnplpjkwmnaukthgp",
+    "project_label": "ethereal-co-stagging",
+    "classification": "production",
+    "conflicts_with_staging_only_safety_rule": true
+  },
+  "remote_activity": {
+    "metadata_query_submitted": true,
+    "target_was_explicit_project_ref": true,
+    "read_only_transaction_requested": true,
+    "query_scope": "database identity metadata, catalog metadata, schema/object/function/ACL/RLS/trigger/storage-bucket-column metadata; no customer, employee, Auth-user, transaction, storage-object, secret or function-body data requested",
+    "query_result_used_or_inspected": false,
+    "further_remote_requests": false,
+    "mutating_sql_executed": false
+  },
+  "reason_for_stop": "The local link and earlier staging assessment identify the reference as staging, but the Supabase CLI target banner classified the same ref as production. Under the instruction to stop if staging cannot be verified, no further inspection is safe until the owner clarifies this target classification.",
+  "database_findings": {
+    "migration_history": "not_inspected",
+    "public_relations": "not_inspected",
+    "functions_and_signatures": "not_inspected",
+    "function_owners_security_definer_search_paths_acl": "not_inspected",
+    "profiles_structure": "not_inspected",
+    "auth_triggers": "not_inspected",
+    "rls_and_policies": "not_inspected",
+    "storage_buckets_and_policies": "not_inspected",
+    "frontend_error_root_cause": "not_established",
+    "migration_conflicts": "not_established"
+  },
+  "local_repository_comparison": {
+    "frontend_rpc_inventory": "docs/SUPABASE_RPC_INVENTORY.md",
+    "business_migrations": [
+      "supabase/migrations/20261118000100_business_schema.sql",
+      "supabase/migrations/20261118000200_business_core_rpcs.sql",
+      "supabase/migrations/20261118000300_business_sales_rpcs.sql",
+      "supabase/migrations/20261118000400_business_payment_rpcs.sql",
+      "supabase/migrations/20261118000500_business_inventory_return_expense_rpcs.sql",
+      "supabase/migrations/20261118000600_business_dashboard_team_rpcs.sql"
+    ],
+    "phase_1_reviews": [
+      "docs/PHASE_1_DATABASE_ARCHITECTURE.md",
+      "docs/PHASE_1_PERMISSION_MATRIX.md",
+      "docs/PHASE_1_SQL_SECURITY_REVIEW.md",
+      "docs/PHASE_1_WORKFLOWS.md",
+      "docs/PHASE_1_IMPLEMENTATION_PLAN.md"
+    ],
+    "remote_comparison_performed": false
+  },
+  "next_step": "Owner/operator must confirm whether the project ref zvnnnplpjkwmnaukthgp is an isolated staging project despite the CLI production classification, using the Supabase dashboard/project metadata without sharing credentials. Do not rerun inspection until confirmed.",
+  "write_operations": "None. Await explicit owner approval before proposing or executing any write operation."
+}
